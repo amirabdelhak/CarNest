@@ -18,7 +18,6 @@ namespace DAL.Context
 
         public virtual DbSet<Make> Makes { get; set; }
         public virtual DbSet<Model> Models { get; set; }
-        public virtual DbSet<CarImage> CarImages { get; set; }
         public virtual DbSet<BodyType> BodyTypes { get; set; }
         public virtual DbSet<FuelType> FuelTypes { get; set; }
         public virtual DbSet<LocationCity> LocationCities { get; set; }

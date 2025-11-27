@@ -1,7 +1,6 @@
 ﻿using DAL.Context;
 using DAL.Entity;
 using DAL.Repository;
-using DAL.Repository.CarImageRepository;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DAL.UnitOfWork
@@ -22,8 +21,6 @@ namespace DAL.UnitOfWork
         private IGenericRepository<Model> modelRepo;
         private IGenericRepository<Favorite> favoriteRepo;
 
-        private ICarImageRepository carImageRepo;
-
         public UnitOfWork(CarNestDBContext dbcontext, IServiceProvider serviceProvider)
         {
             this.dbcontext = dbcontext;
@@ -41,9 +38,6 @@ namespace DAL.UnitOfWork
 
         public IGenericRepository<Car> CarRepo
             => carRepo ??= serviceProvider.GetRequiredService<IGenericRepository<Car>>();
-
-        public ICarImageRepository CarImageRepo
-            => carImageRepo ??= serviceProvider.GetRequiredService<ICarImageRepository>();
 
         public IGenericRepository<BodyType> BodyTypeRepo
             => bodyTypeRepo ??= serviceProvider.GetRequiredService<IGenericRepository<BodyType>>();

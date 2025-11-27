@@ -1,0 +1,75 @@
+using DAL.Entity;
+using Presentation.DTOs.Requests;
+using Presentation.DTOs.Responses;
+using System;
+using System.Linq;
+using System.Text.Json;
+
+namespace Presentation.Mappings
+{
+    public static class CarMapping
+    {
+        public static CarResponse ToResponse(this Car e) =>
+            new CarResponse
+            {
+                CarId = e.CarId,
+                Year = e.Year,
+                Price = e.Price,
+                Description = e.Description,
+                MakeId = e.MakeId,
+                ModelId = e.ModelId,
+                BodyTypeId = e.BodyTypeId,
+                FuelId = e.FuelId,
+                LocId = e.LocId,
+                AdminId = e.AdminId,
+                BuyerId = e.BuyerId,
+                CreatedDate = e.CreatedDate,
+                ImageUrls = string.IsNullOrEmpty(e.ImageUrls) 
+                    ? new List<string>() 
+                    : JsonSerializer.Deserialize<List<string>>(e.ImageUrls) ?? new List<string>()
+            };
+
+        public static CarDetailResponse ToDetailResponse(this Car e) =>
+            new CarDetailResponse
+            {
+                CarId = e.CarId,
+                Year = e.Year,
+                Price = e.Price,
+                Description = e.Description,
+                MakeId = e.MakeId,
+                MakeName = e.Make?.MakeName,
+                ModelId = e.ModelId,
+                ModelName = e.Model?.ModelName,
+                BodyTypeId = e.BodyTypeId,
+                BodyTypeName = e.BodyType?.Name,
+                FuelId = e.FuelId,
+                FuelName = e.FuelType?.Name,
+                LocId = e.LocId,
+                LocationName = e.LocationCity?.Name,
+                AdminId = e.AdminId,
+                BuyerId = e.BuyerId,
+                CreatedDate = e.CreatedDate,
+                ImageUrls = string.IsNullOrEmpty(e.ImageUrls) 
+                    ? new List<string>() 
+                    : JsonSerializer.Deserialize<List<string>>(e.ImageUrls) ?? new List<string>()
+            };
+
+        public static Car ToEntity(this CarRequest r) =>
+            new Car
+            {
+                CarId = Guid.NewGuid().ToString(),
+                Year = r.Year,
+                Price = r.Price,
+                Description = r.Description,
+                MakeId = r.MakeId,
+                ModelId = r.ModelId,
+                BodyTypeId = r.BodyTypeId,
+                FuelId = r.FuelId,
+                LocId = r.LocId,
+                AdminId = r.AdminId ?? string.Empty,
+                BuyerId = r.BuyerId ?? string.Empty,
+                CreatedDate = DateTime.UtcNow,
+                ImageUrls = null // Will be set by manager after saving images
+            };
+    }
+}

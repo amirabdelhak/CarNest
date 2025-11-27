@@ -1,6 +1,5 @@
 ﻿using DAL.Entity;
 using DAL.Repository;
-using DAL.Repository.CarImageRepository;
 
 namespace DAL.UnitOfWork
 {
@@ -16,7 +15,6 @@ namespace DAL.UnitOfWork
         IGenericRepository<Make> MakeRepo { get; }
         IGenericRepository<Model> ModelRepo { get; }
         IGenericRepository<Favorite> FavoriteRepo { get; }
-        IGenericRepository<CarImage> CarImageRepo { get; }
 
         void Save();
     }

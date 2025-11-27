@@ -1,0 +1,248 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+using DAL.Entity;
+using DAL.UnitOfWork;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Presentation.DTOs.Requests;
+using Presentation.DTOs.Responses;
+using Presentation.Mappings;
+
+namespace BLL.Manager.CarManager
+{
+    public class CarManager : ICarManager
+    {
+        private readonly IUnitOfWork UnitOfWork;
+        private readonly string webRootPath;
+
+        public CarManager(IUnitOfWork UnitOfWork, string webRootPath)
+        {
+            this.UnitOfWork = UnitOfWork;
+            this.webRootPath = webRootPath;
+        }
+
+        public IEnumerable<CarResponse> GetAll()
+        {
+            var data = UnitOfWork.CarRepo.GetAll(query => 
+                query.Include(c => c.Make)
+                     .Include(c => c.Model)
+                     .Include(c => c.BodyType)
+                     .Include(c => c.FuelType)
+                     .Include(c => c.LocationCity)
+            );
+            return data.Select(c => c.ToResponse());
+        }
+
+        public IEnumerable<CarResponse> GetCarsByVendor(string vendorId)
+        {
+            var data = UnitOfWork.CarRepo.GetAll(query =>
+                query.Where(c => c.BuyerId == vendorId)
+                     .Include(c => c.Make)
+                     .Include(c => c.Model)
+                     .Include(c => c.BodyType)
+                     .Include(c => c.FuelType)
+                     .Include(c => c.LocationCity)
+            );
+            return data.Select(c => c.ToResponse());
+        }
+
+        public CarDetailResponse? GetById(string id)
+        {
+            var data = UnitOfWork.CarRepo.GetAll(query =>
+                query.Where(c => c.CarId == id)
+                     .Include(c => c.Make)
+                     .Include(c => c.Model)
+                     .Include(c => c.BodyType)
+                     .Include(c => c.FuelType)
+                     .Include(c => c.LocationCity)
+            ).FirstOrDefault();
+
+            return data?.ToDetailResponse();
+        }
+
+        public CarResponse Add(CarRequest request, IFormFileCollection? images)
+        {
+            var entity = request.ToEntity();
+            
+            // Save images if provided
+            if (images != null && images.Count > 0)
+            {
+                var imageUrls = SaveImages(images);
+                entity.ImageUrls = JsonSerializer.Serialize(imageUrls);
+            }
+
+            UnitOfWork.CarRepo.Add(entity);
+            UnitOfWork.Save();
+            return entity.ToResponse();
+        }
+
+        public CarResponse Update(string id, CarRequest request, string userId, string userRole, IFormFileCollection? newImages, List<string>? imagesToDelete)
+        {
+            var existingCar = UnitOfWork.CarRepo.GetById(id);
+            if (existingCar == null)
+            {
+                throw new Exception($"Car with ID {id} not found");
+            }
+
+            // Authorization check: Vendor can only update their own cars
+            if (userRole == "Vendor" && existingCar.BuyerId != userId)
+            {
+                throw new UnauthorizedAccessException("You can only update your own cars");
+            }
+
+            // Manual mapping update logic
+            existingCar.Year = request.Year;
+            existingCar.Price = request.Price;
+            existingCar.Description = request.Description;
+            existingCar.MakeId = request.MakeId;
+            existingCar.ModelId = request.ModelId;
+            existingCar.BodyTypeId = request.BodyTypeId;
+            existingCar.FuelId = request.FuelId;
+            existingCar.LocId = request.LocId;
+
+            // Handle images
+            var currentImages = string.IsNullOrEmpty(existingCar.ImageUrls)
+                ? new List<string>()
+                : JsonSerializer.Deserialize<List<string>>(existingCar.ImageUrls) ?? new List<string>();
+
+            // Delete specified images
+            if (imagesToDelete != null && imagesToDelete.Count > 0)
+            {
+                DeleteImages(imagesToDelete);
+                currentImages = currentImages.Where(img => !imagesToDelete.Contains(img)).ToList();
+            }
+
+            // Add new images
+            if (newImages != null && newImages.Count > 0)
+            {
+                var newImageUrls = SaveImages(newImages);
+                currentImages.AddRange(newImageUrls);
+            }
+
+            existingCar.ImageUrls = currentImages.Count > 0 
+                ? JsonSerializer.Serialize(currentImages) 
+                : null;
+
+            UnitOfWork.CarRepo.Update(existingCar);
+            UnitOfWork.Save();
+            return existingCar.ToResponse();
+        }
+
+        public void Delete(string id, string userId, string userRole)
+        {
+            var item = UnitOfWork.CarRepo.GetById(id);
+            if (item == null)
+            {
+                throw new Exception($"Car with ID {id} not found");
+            }
+
+            // Authorization check: Vendor can only delete their own cars
+            if (userRole == "Vendor" && item.BuyerId != userId)
+            {
+                throw new UnauthorizedAccessException("You can only delete your own cars");
+            }
+
+            // Delete all associated images
+            if (!string.IsNullOrEmpty(item.ImageUrls))
+            {
+                var imageUrls = JsonSerializer.Deserialize<List<string>>(item.ImageUrls);
+                if (imageUrls != null && imageUrls.Count > 0)
+                {
+                    DeleteImages(imageUrls);
+                }
+            }
+
+            UnitOfWork.CarRepo.Delete(item);
+            UnitOfWork.Save();
+        }
+
+        #region Private Helper Methods
+
+        private List<string> SaveImages(IFormFileCollection images)
+        {
+            var imageUrls = new List<string>();
+            var uploadsFolder = Path.Combine(webRootPath, "images", "cars");
+
+            // Create directory if it doesn't exist
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            foreach (var image in images)
+            {
+                // Validate image
+                if (!ValidateImageFile(image))
+                {
+                    continue; // Skip invalid images
+                }
+
+                // Generate unique filename
+                var fileExtension = Path.GetExtension(image.FileName);
+                var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                // Save file
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    image.CopyTo(fileStream);
+                }
+
+                // Store relative path
+                imageUrls.Add($"images/cars/{uniqueFileName}");
+            }
+
+            return imageUrls;
+        }
+
+        private void DeleteImages(List<string> imageUrls)
+        {
+            foreach (var imageUrl in imageUrls)
+            {
+                try
+                {
+                    var filePath = Path.Combine(webRootPath, imageUrl.Replace("/", "\\"));
+                    if (File.Exists(filePath))
+                    {
+                        File.Delete(filePath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log error but don't throw - continue deleting other images
+                    Console.WriteLine($"Error deleting image {imageUrl}: {ex.Message}");
+                }
+            }
+        }
+
+        private bool ValidateImageFile(IFormFile file)
+        {
+            // Check file size (max 5MB)
+            if (file.Length > 5 * 1024 * 1024)
+            {
+                return false;
+            }
+
+            // Check file extension
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+            var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!allowedExtensions.Contains(fileExtension))
+            {
+                return false;
+            }
+
+            // Check MIME type
+            var allowedMimeTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
+            if (!allowedMimeTypes.Contains(file.ContentType.ToLowerInvariant()))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        #endregion
+    }
+}
