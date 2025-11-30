@@ -30,7 +30,7 @@ namespace Presentation
 
             //remeber to change the DBConnection FIRST//////////////////////////////////////////////////////////
             builder.Services.AddDbContext<CarNestDBContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("MostafaDB")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DeployDB")));
 
 
             builder.Services.AddIdentity<IdentityUser, IdentityRole>()
@@ -92,7 +92,7 @@ namespace Presentation
 
             var app = builder.Build();
 
-            if (app.Environment.IsDevelopment())
+            if (app.Environment.IsDevelopment()|| app.Environment.IsProduction())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
@@ -107,6 +107,17 @@ namespace Presentation
 
 
             app.MapControllers();
+
+            // Seed Admin User
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                var config = services.GetRequiredService<IConfiguration>();
+
+                DbInitializer.SeedAdminAsync(services, config)
+                             .GetAwaiter()
+                             .GetResult();
+            }
 
             app.Run();
         }
