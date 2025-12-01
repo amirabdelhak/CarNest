@@ -57,6 +57,8 @@ namespace BLL.Manager.CarManager
                      .Include(c => c.BodyType)
                      .Include(c => c.FuelType)
                      .Include(c => c.LocationCity)
+                     .Include(c => c.Admin)
+                     .Include(c => c.Vendor)
             ).FirstOrDefault();
 
             return data?.ToDetailResponse();

@@ -48,11 +48,12 @@ namespace BLL.Manager.FavoriteManager
                      .Include(c => c.BodyType)
                      .Include(c => c.FuelType)
                      .Include(c => c.LocationCity)
+                     .Include(c => c.Admin)
+                     .Include(c => c.Vendor)
             ).FirstOrDefault();
 
             return new FavoriteResponse
             {
-                CustomerId = favorite.CustomerId,
                 CarId = favorite.CarId,
                 SavedAt = favorite.SavedAt,
                 Car = car?.ToDetailResponse()
@@ -83,11 +84,14 @@ namespace BLL.Manager.FavoriteManager
                         .ThenInclude(c => c.FuelType)
                      .Include(f => f.Car)
                         .ThenInclude(c => c.LocationCity)
+                     .Include(f => f.Car)
+                        .ThenInclude(c => c.Admin)
+                     .Include(f => f.Car)
+                        .ThenInclude(c => c.Vendor)
             );
 
             return favorites.Select(f => new FavoriteResponse
             {
-                CustomerId = f.CustomerId,
                 CarId = f.CarId,
                 SavedAt = f.SavedAt,
                 Car = f.Car?.ToDetailResponse()

@@ -16,11 +16,11 @@ namespace Presentation.Mappings
                 Year = e.Year,
                 Price = e.Price,
                 Description = e.Description,
-                MakeId = e.MakeId,
-                ModelId = e.ModelId,
-                BodyTypeId = e.BodyTypeId,
-                FuelId = e.FuelId,
-                LocId = e.LocId,
+                MakeName = e.Make?.MakeName,
+                ModelName = e.Model?.ModelName,
+                BodyTypeName = e.BodyType?.Name,
+                FuelName = e.FuelType?.Name,
+                LocationName = e.LocationCity?.Name,
                 CreatedDate = e.CreatedDate,
                 ImageUrls = string.IsNullOrEmpty(e.ImageUrls) 
                     ? new List<string>() 
@@ -47,7 +47,10 @@ namespace Presentation.Mappings
                 CreatedDate = e.CreatedDate,
                 ImageUrls = string.IsNullOrEmpty(e.ImageUrls) 
                     ? new List<string>() 
-                    : JsonSerializer.Deserialize<List<string>>(e.ImageUrls) ?? new List<string>()
+                    : JsonSerializer.Deserialize<List<string>>(e.ImageUrls) ?? new List<string>(),
+                PublisherName = e.Admin != null ? $"{e.Admin.FirstName} {e.Admin.LastName}" : (e.Vendor != null ? $"{e.Vendor.FirstName} {e.Vendor.LastName}" : null),
+                PublisherPhone = e.Admin != null ? e.Admin.PhoneNumber : (e.Vendor != null ? e.Vendor.PhoneNumber : null),
+                PublisherEmail = e.Admin != null ? e.Admin.Email : (e.Vendor != null ? e.Vendor.Email : null)
             };
 
         public static Car ToEntity(this CarRequest r, string? adminId, string? vendorId) =>
