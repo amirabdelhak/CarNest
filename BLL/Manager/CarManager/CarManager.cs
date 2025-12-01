@@ -77,7 +77,18 @@ namespace BLL.Manager.CarManager
 
             UnitOfWork.CarRepo.Add(entity);
             UnitOfWork.Save();
-            return entity.ToResponse();
+
+            // Reload entity with includes to get related names
+            var reloadedEntity = UnitOfWork.CarRepo.GetAll(query => 
+                query.Where(c => c.CarId == entity.CarId)
+                     .Include(c => c.Make)
+                     .Include(c => c.Model)
+                     .Include(c => c.BodyType)
+                     .Include(c => c.FuelType)
+                     .Include(c => c.LocationCity)
+            ).FirstOrDefault();
+
+            return reloadedEntity?.ToResponse() ?? entity.ToResponse();
         }
 
         public CarResponse Update(string id, CarRequest request, string userId, string userRole, IFormFileCollection? newImages, List<string>? imagesToDelete)
