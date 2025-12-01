@@ -31,7 +31,7 @@ namespace Presentation.Controllers
             this.roleManager = roleManager;
             this.configuration = configuration;
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpPost("register/admin")]
         public async Task<IActionResult> RegisterAdmin(RegisterAdminRequest request)
         {
