@@ -1,6 +1,7 @@
 ﻿using Azure.Core;
 using BLL.Manager.LocationManager;
 using DAL.Entity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.DTOs.Requests;
@@ -9,6 +10,7 @@ namespace Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin")]
     public class LocationCityController : ControllerBase
     {
         private readonly ILocationManager manager;
@@ -19,9 +21,11 @@ namespace Presentation.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult GetAll() => Ok(manager.GetAll());
 
         [HttpGet("{id:int}")]
+        [AllowAnonymous]
         public IActionResult GetById(int id)
         {
             var result = manager.GetById(id);

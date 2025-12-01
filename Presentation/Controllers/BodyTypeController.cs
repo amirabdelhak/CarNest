@@ -1,5 +1,6 @@
 ﻿using BLL.Manager.BodyTypeManager;
 using DAL.Entity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NuGet.Configuration;
@@ -10,6 +11,7 @@ namespace Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin")]
     public class BodyTypeController : ControllerBase
     {
         private readonly IBodyTypeManager manager;
@@ -20,12 +22,14 @@ namespace Presentation.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult GetAll()
         {
             return Ok(manager.GetAll());
         }
 
         [HttpGet("{id:int}")]
+        [AllowAnonymous]
         public IActionResult GetById(int id)
         {
             var result = manager.GetById(id);

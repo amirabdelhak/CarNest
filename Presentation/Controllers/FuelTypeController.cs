@@ -1,6 +1,7 @@
 ﻿using Azure.Core;
 using BLL.Manager.FuelTypeManager;
 using DAL.Entity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +11,7 @@ namespace Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin")]
     public class FuelTypeController : ControllerBase
     {
         private readonly IFuelTypeManager manager;
@@ -20,9 +22,11 @@ namespace Presentation.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult GetAll() => Ok(manager.GetAll());
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public IActionResult GetById(int id)
         {
             var result = manager.GetById(id);
