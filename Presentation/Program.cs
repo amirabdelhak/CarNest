@@ -26,11 +26,43 @@ namespace Presentation
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+                {
+                    Title = "Presentation",
+                    Version = "v1"
+                });
+
+                c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                    Description = "Put **ONLY** your JWT token here."
+                });
+
+                c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+                {
+                    {
+                        new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                        {
+                            Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                            {
+                                Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[]{ }
+                    }
+                });
+            });
 
             //remeber to change the DBConnection FIRST//////////////////////////////////////////////////////////
             builder.Services.AddDbContext<CarNestDBContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("MostafaDB")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DeployDB")));
 
 
             builder.Services.AddIdentity<IdentityUser, IdentityRole>()
@@ -92,7 +124,7 @@ namespace Presentation
 
             var app = builder.Build();
 
-            if (app.Environment.IsDevelopment())
+            if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
@@ -106,7 +138,16 @@ namespace Presentation
             app.UseAuthorization();
 
 
-            app.MapControllers();
+            app.MapControllers(); 
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                var config = services.GetRequiredService<IConfiguration>();
+
+                DbInitializer.SeedAdminAsync(services, config)
+                             .GetAwaiter()
+                             .GetResult();
+            }
 
             app.Run();
         }

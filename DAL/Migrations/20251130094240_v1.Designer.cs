@@ -4,6 +4,7 @@ using DAL.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DAL.Migrations
 {
     [DbContext(typeof(CarNestDBContext))]
-    partial class CarNestDBContextModelSnapshot : ModelSnapshot
+    [Migration("20251130094240_v1")]
+    partial class v1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -47,11 +50,17 @@ namespace DAL.Migrations
                         .HasColumnType("nvarchar(36)");
 
                     b.Property<string>("AdminId")
+                        .IsRequired()
                         .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("BodyTypeId")
                         .HasColumnType("int");
+
+                    b.Property<string>("BuyerId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
@@ -78,10 +87,6 @@ namespace DAL.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("VendorId")
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<int>("Year")
                         .HasColumnType("int");
 
@@ -91,6 +96,8 @@ namespace DAL.Migrations
 
                     b.HasIndex("BodyTypeId");
 
+                    b.HasIndex("BuyerId");
+
                     b.HasIndex("FuelId");
 
                     b.HasIndex("LocId");
@@ -98,8 +105,6 @@ namespace DAL.Migrations
                     b.HasIndex("MakeId");
 
                     b.HasIndex("ModelId");
-
-                    b.HasIndex("VendorId");
 
                     b.ToTable("Cars");
                 });
@@ -480,12 +485,19 @@ namespace DAL.Migrations
                     b.HasOne("DAL.Entity.Admin", "Admin")
                         .WithMany("Cars")
                         .HasForeignKey("AdminId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("DAL.Entity.BodyType", "BodyType")
                         .WithMany("Cars")
                         .HasForeignKey("BodyTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DAL.Entity.Vendor", "Vendor")
+                        .WithMany("Cars")
+                        .HasForeignKey("BuyerId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("DAL.Entity.FuelType", "FuelType")
@@ -511,11 +523,6 @@ namespace DAL.Migrations
                         .HasForeignKey("ModelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("DAL.Entity.Vendor", "Vendor")
-                        .WithMany("Cars")
-                        .HasForeignKey("VendorId")
-                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Admin");
 

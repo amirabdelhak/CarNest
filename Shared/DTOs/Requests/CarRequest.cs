@@ -31,12 +31,5 @@ namespace Presentation.DTOs.Requests
 
         [Required(ErrorMessage = "Location is required")]
         public int LocId { get; set; }
-
-        // These will be set by the controller based on user role
-        [MaxLength(450)]
-        public string? AdminId { get; set; }
-
-        [MaxLength(450)]
-        public string? BuyerId { get; set; }
     }
 }

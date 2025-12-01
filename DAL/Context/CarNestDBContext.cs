@@ -36,7 +36,7 @@ namespace DAL.Context
             builder.Entity<Car>()
         .HasOne(c => c.Vendor)
         .WithMany(b => b.Cars)
-        .HasForeignKey(c => c.BuyerId)
+        .HasForeignKey(c => c.VendorId)
         .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Car>()

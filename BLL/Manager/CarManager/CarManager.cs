@@ -38,7 +38,7 @@ namespace BLL.Manager.CarManager
         public IEnumerable<CarResponse> GetCarsByVendor(string vendorId)
         {
             var data = UnitOfWork.CarRepo.GetAll(query =>
-                query.Where(c => c.BuyerId == vendorId)
+                query.Where(c => c.VendorId == vendorId)
                      .Include(c => c.Make)
                      .Include(c => c.Model)
                      .Include(c => c.BodyType)
@@ -62,9 +62,9 @@ namespace BLL.Manager.CarManager
             return data?.ToDetailResponse();
         }
 
-        public CarResponse Add(CarRequest request, IFormFileCollection? images)
+        public CarResponse Add(CarRequest request, string? adminId, string? vendorId, IFormFileCollection? images)
         {
-            var entity = request.ToEntity();
+            var entity = request.ToEntity(adminId, vendorId);
             
             // Save images if provided
             if (images != null && images.Count > 0)
@@ -87,7 +87,7 @@ namespace BLL.Manager.CarManager
             }
 
             // Authorization check: Vendor can only update their own cars
-            if (userRole == "Vendor" && existingCar.BuyerId != userId)
+            if (userRole == "Vendor" && existingCar.VendorId != userId)
             {
                 throw new UnauthorizedAccessException("You can only update your own cars");
             }
@@ -139,7 +139,7 @@ namespace BLL.Manager.CarManager
             }
 
             // Authorization check: Vendor can only delete their own cars
-            if (userRole == "Vendor" && item.BuyerId != userId)
+            if (userRole == "Vendor" && item.VendorId != userId)
             {
                 throw new UnauthorizedAccessException("You can only delete your own cars");
             }

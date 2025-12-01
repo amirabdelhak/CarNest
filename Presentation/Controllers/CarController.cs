@@ -8,6 +8,7 @@ namespace Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class CarController : ControllerBase
     {
         private readonly ICarManager manager;
@@ -57,26 +58,24 @@ namespace Presentation.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userRole = User.FindFirstValue(ClaimTypes.Role);
 
-            // Set AdminId or BuyerId based on role
-            if (userRole == "Admin")
+            if (string.IsNullOrEmpty(userId))
             {
-                request.AdminId = userId;
-                request.BuyerId = userId; // Admin acts as both
-            }
-            else if (userRole == "Vendor")
-            {
-                request.BuyerId = userId;
-                request.AdminId = userId; // Vendor sets both to their ID
+                return Unauthorized(new { Message = "User ID not found in token" });
             }
 
             try
             {
-                var result = manager.Add(request, images);
+                // Ownership Model: Either Admin OR Vendor owns the car
+                string? adminId = userRole == "Admin" ? userId : null;
+                string? vendorId = userRole == "Vendor" ? userId : null;
+
+                var result = manager.Add(request, adminId, vendorId, images);
                 return CreatedAtAction(nameof(GetById), new { id = result.CarId }, result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { Message = ex.Message });
+                var message = ex.InnerException != null ? $"{ex.Message} | Inner: {ex.InnerException.Message}" : ex.Message;
+                return BadRequest(new { Message = message });
             }
         }
 

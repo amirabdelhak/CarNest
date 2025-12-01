@@ -54,16 +54,14 @@ namespace DAL.Entity
         public int LocId { get; set; }
         public virtual LocationCity LocationCity { get; set; }
 
-        [Required]
         [MaxLength(450)]
         [ForeignKey("Admin")]
-        public string AdminId { get; set; }
+        public string? AdminId { get; set; }
         public virtual Admin Admin { get; set; }
 
-        [Required]
         [MaxLength(450)]
         [ForeignKey("Vendor")]
-        public string BuyerId { get; set; }
+        public string? VendorId { get; set; }
         public virtual Vendor Vendor { get; set; }
 
         public virtual ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();

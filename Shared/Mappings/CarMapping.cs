@@ -21,8 +21,6 @@ namespace Presentation.Mappings
                 BodyTypeId = e.BodyTypeId,
                 FuelId = e.FuelId,
                 LocId = e.LocId,
-                AdminId = e.AdminId,
-                BuyerId = e.BuyerId,
                 CreatedDate = e.CreatedDate,
                 ImageUrls = string.IsNullOrEmpty(e.ImageUrls) 
                     ? new List<string>() 
@@ -46,15 +44,13 @@ namespace Presentation.Mappings
                 FuelName = e.FuelType?.Name,
                 LocId = e.LocId,
                 LocationName = e.LocationCity?.Name,
-                AdminId = e.AdminId,
-                BuyerId = e.BuyerId,
                 CreatedDate = e.CreatedDate,
                 ImageUrls = string.IsNullOrEmpty(e.ImageUrls) 
                     ? new List<string>() 
                     : JsonSerializer.Deserialize<List<string>>(e.ImageUrls) ?? new List<string>()
             };
 
-        public static Car ToEntity(this CarRequest r) =>
+        public static Car ToEntity(this CarRequest r, string? adminId, string? vendorId) =>
             new Car
             {
                 CarId = Guid.NewGuid().ToString(),
@@ -66,8 +62,8 @@ namespace Presentation.Mappings
                 BodyTypeId = r.BodyTypeId,
                 FuelId = r.FuelId,
                 LocId = r.LocId,
-                AdminId = r.AdminId ?? string.Empty,
-                BuyerId = r.BuyerId ?? string.Empty,
+                AdminId = adminId,
+                VendorId = vendorId,
                 CreatedDate = DateTime.UtcNow,
                 ImageUrls = null // Will be set by manager after saving images
             };

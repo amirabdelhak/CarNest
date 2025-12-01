@@ -4,6 +4,7 @@ using DAL.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DAL.Migrations
 {
     [DbContext(typeof(CarNestDBContext))]
-    partial class CarNestDBContextModelSnapshot : ModelSnapshot
+    [Migration("20251130235321_RenameBuyerIdToVendorId")]
+    partial class RenameBuyerIdToVendorId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -47,6 +50,7 @@ namespace DAL.Migrations
                         .HasColumnType("nvarchar(36)");
 
                     b.Property<string>("AdminId")
+                        .IsRequired()
                         .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
@@ -79,6 +83,7 @@ namespace DAL.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("VendorId")
+                        .IsRequired()
                         .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
@@ -480,7 +485,8 @@ namespace DAL.Migrations
                     b.HasOne("DAL.Entity.Admin", "Admin")
                         .WithMany("Cars")
                         .HasForeignKey("AdminId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("DAL.Entity.BodyType", "BodyType")
                         .WithMany("Cars")
@@ -515,7 +521,8 @@ namespace DAL.Migrations
                     b.HasOne("DAL.Entity.Vendor", "Vendor")
                         .WithMany("Cars")
                         .HasForeignKey("VendorId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Admin");
 
