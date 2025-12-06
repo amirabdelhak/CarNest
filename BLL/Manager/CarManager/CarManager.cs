@@ -23,20 +23,27 @@ namespace BLL.Manager.CarManager
             this.webRootPath = webRootPath;
         }
 
-        public IEnumerable<CarResponse> GetAll()
+        public PagedResponse<CarResponse> GetAll(PaginationRequest request)
         {
+            var count = UnitOfWork.CarRepo.Count();
+            
             var data = UnitOfWork.CarRepo.GetAll(query => 
                 query.Include(c => c.Make)
                      .Include(c => c.Model)
                      .Include(c => c.BodyType)
                      .Include(c => c.FuelType)
                      .Include(c => c.LocationCity)
+                     .Skip((request.PageNumber - 1) * request.PageSize)
+                     .Take(request.PageSize)
             );
-            return data.Select(c => c.ToResponse());
+
+            return new PagedResponse<CarResponse>(data.Select(c => c.ToResponse()), request.PageNumber, request.PageSize, count);
         }
 
-        public IEnumerable<CarResponse> GetCarsByVendor(string vendorId)
+        public PagedResponse<CarResponse> GetCarsByVendor(PaginationRequest request, string vendorId)
         {
+            var count = UnitOfWork.CarRepo.Count(c => c.VendorId == vendorId);
+
             var data = UnitOfWork.CarRepo.GetAll(query =>
                 query.Where(c => c.VendorId == vendorId)
                      .Include(c => c.Make)
@@ -44,8 +51,11 @@ namespace BLL.Manager.CarManager
                      .Include(c => c.BodyType)
                      .Include(c => c.FuelType)
                      .Include(c => c.LocationCity)
+                     .Skip((request.PageNumber - 1) * request.PageSize)
+                     .Take(request.PageSize)
             );
-            return data.Select(c => c.ToResponse());
+            
+            return new PagedResponse<CarResponse>(data.Select(c => c.ToResponse()), request.PageNumber, request.PageSize, count);
         }
 
         public CarDetailResponse? GetById(string id)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,5 +14,6 @@ namespace DAL.Repository
         void Add(Tentity entity);
         void Update(Tentity entity);
         void Delete(Tentity entity);
+        int Count(Expression<Func<Tentity, bool>>? predicate = null);
     }
 }

@@ -8,8 +8,8 @@ namespace BLL.Manager.CarManager
 {
     public interface ICarManager
     {
-        IEnumerable<CarResponse> GetAll();
-        IEnumerable<CarResponse> GetCarsByVendor(string vendorId);
+        PagedResponse<CarResponse> GetAll(PaginationRequest request);
+        PagedResponse<CarResponse> GetCarsByVendor(PaginationRequest request, string vendorId);
         CarDetailResponse? GetById(string id);
         CarResponse Add(CarRequest request, string? adminId, string? vendorId, IFormFileCollection? images);
         CarResponse Update(string id, CarRequest request, string userId, string userRole, IFormFileCollection? newImages, List<string>? imagesToDelete);

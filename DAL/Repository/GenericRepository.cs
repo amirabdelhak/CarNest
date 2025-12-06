@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using DAL.Context;
@@ -44,6 +45,15 @@ namespace DAL.Repository
         public void Delete(Tentity entity)
         {
             dbcontext.Set<Tentity>().Remove(entity);
+        }
+
+        public int Count(Expression<Func<Tentity, bool>>? predicate = null)
+        {
+            if (predicate == null)
+            {
+                return dbcontext.Set<Tentity>().Count();
+            }
+            return dbcontext.Set<Tentity>().Where(predicate).Count();
         }
 
     }

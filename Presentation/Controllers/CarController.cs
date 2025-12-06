@@ -22,7 +22,7 @@ namespace Presentation.Controllers
         /// Get all cars. Vendors see only their cars, others see all cars.
         /// </summary>
         [HttpGet]
-        public IActionResult GetAll()
+        public IActionResult GetAll([FromQuery] PaginationRequest request)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userRole = User.FindFirstValue(ClaimTypes.Role);
@@ -30,11 +30,11 @@ namespace Presentation.Controllers
             // If Vendor, return only their cars
             if (userRole == "Vendor" && !string.IsNullOrEmpty(userId))
             {
-                return Ok(manager.GetCarsByVendor(userId));
+                return Ok(manager.GetCarsByVendor(request, userId));
             }
 
             // Otherwise return all cars (Admin, Customer, or anonymous)
-            return Ok(manager.GetAll());
+            return Ok(manager.GetAll(request));
         }
 
         /// <summary>
