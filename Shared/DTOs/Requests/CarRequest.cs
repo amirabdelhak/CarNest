@@ -1,0 +1,32 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Presentation.DTOs.Requests
+{
+    public class CarRequest
+    {
+        [Required(ErrorMessage = "Year is required")]
+        [Range(1900, 2100, ErrorMessage = "Year must be between 1900 and 2100")]
+        public int Year { get; set; }
+
+        [Required(ErrorMessage = "Price is required")]
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
+        public decimal Price { get; set; }
+
+        [MaxLength(2048, ErrorMessage = "Description cannot exceed 2048 characters")]
+        public string? Description { get; set; }
+
+        [Required(ErrorMessage = "Model is required")]
+        public int ModelId { get; set; }
+
+        [Required(ErrorMessage = "Body Type is required")]
+        public int BodyTypeId { get; set; }
+
+        [Required(ErrorMessage = "Fuel Type is required")]
+        public int FuelId { get; set; }
+
+        [Required(ErrorMessage = "Location is required")]
+        public int LocId { get; set; }
+    }
+}
