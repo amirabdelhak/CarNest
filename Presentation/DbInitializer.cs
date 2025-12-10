@@ -67,6 +67,8 @@ namespace Presentation
         public static async Task SeedTestDataAsync(IServiceProvider serviceProvider)
         {
             var context = serviceProvider.GetRequiredService<CarNestDBContext>();
+            var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
             // Ensure database is created / migrated
             await context.Database.MigrateAsync();
@@ -76,53 +78,60 @@ namespace Presentation
             if (!await context.BodyTypes.AnyAsync())
             {
                 context.BodyTypes.AddRange(
-                    new BodyType { BodyId = 1, Name = "Sedan" },
-                    new BodyType { BodyId = 2, Name = "SUV" },
-                    new BodyType { BodyId = 3, Name = "Hatchback" }
+                    new BodyType { Name = "Sedan" },
+                    new BodyType { Name = "SUV" },
+                    new BodyType { Name = "Hatchback" }
                 );
+                await context.SaveChangesAsync();
             }
 
             if (!await context.FuelTypes.AnyAsync())
             {
                 context.FuelTypes.AddRange(
-                    new FuelType { FuelId = 1, Name = "Gasoline" },
-                    new FuelType { FuelId = 2, Name = "Diesel" },
-                    new FuelType { FuelId = 3, Name = "Electric" }
+                    new FuelType { Name = "Gasoline" },
+                    new FuelType { Name = "Diesel" },
+                    new FuelType { Name = "Electric" }
                 );
+                await context.SaveChangesAsync();
             }
 
             if (!await context.LocationCities.AnyAsync())
             {
                 context.LocationCities.AddRange(
-                    new LocationCity { LocId = 1, Name = "Cairo" },
-                    new LocationCity { LocId = 2, Name = "Alexandria" },
-                    new LocationCity { LocId = 3, Name = "Giza" }
+                    new LocationCity { Name = "Cairo" },
+                    new LocationCity { Name = "Alexandria" },
+                    new LocationCity { Name = "Giza" }
                 );
+                await context.SaveChangesAsync();
             }
 
             if (!await context.Makes.AnyAsync())
             {
                 context.Makes.AddRange(
-                    new Make { MakeId = 1, MakeName = "Toyota" },
-                    new Make { MakeId = 2, MakeName = "Honda" }
+                    new Make { MakeName = "Toyota" },
+                    new Make { MakeName = "Honda" }
                 );
+                await context.SaveChangesAsync();
             }
 
             if (!await context.Models.AnyAsync())
             {
-                context.Models.AddRange(
-                    new Model { ModelId = 1, ModelName = "Corolla", MakeId = 1 },
-                    new Model { ModelId = 2, ModelName = "Camry", MakeId = 1 },
-                    new Model { ModelId = 3, ModelName = "Civic", MakeId = 2 }
-                );
+                // Get the saved Makes to reference their IDs
+                var toyota = await context.Makes.FirstOrDefaultAsync(m => m.MakeName == "Toyota");
+                var honda = await context.Makes.FirstOrDefaultAsync(m => m.MakeName == "Honda");
+
+                if (toyota != null && honda != null)
+                {
+                    context.Models.AddRange(
+                        new Model { ModelName = "Corolla", MakeId = toyota.MakeId },
+                        new Model { ModelName = "Camry", MakeId = toyota.MakeId },
+                        new Model { ModelName = "Civic", MakeId = honda.MakeId }
+                    );
+                    await context.SaveChangesAsync();
+                }
             }
 
-            await context.SaveChangesAsync();
-
             // -------- Test users (Vendor) --------
-
-            var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
-            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
             const string vendorRole = "Vendor";
 
@@ -164,42 +173,58 @@ namespace Presentation
 
             if (!await context.Cars.AnyAsync())
             {
+                // Get the saved entities to reference their IDs
+                var corolla = await context.Models.FirstOrDefaultAsync(m => m.ModelName == "Corolla");
+                var civic = await context.Models.FirstOrDefaultAsync(m => m.ModelName == "Civic");
+                var sedan = await context.BodyTypes.FirstOrDefaultAsync(b => b.Name == "Sedan");
+                var hatchback = await context.BodyTypes.FirstOrDefaultAsync(b => b.Name == "Hatchback");
+                var gasoline = await context.FuelTypes.FirstOrDefaultAsync(f => f.Name == "Gasoline");
+                var diesel = await context.FuelTypes.FirstOrDefaultAsync(f => f.Name == "Diesel");
+                var cairo = await context.LocationCities.FirstOrDefaultAsync(l => l.Name == "Cairo");
+                var alexandria = await context.LocationCities.FirstOrDefaultAsync(l => l.Name == "Alexandria");
+
                 // Car owned by Admin
                 var admin = await userManager.FindByNameAsync("admin");
                 var adminId = admin?.Id;
 
-                context.Cars.Add(new Car
+                if (corolla != null && sedan != null && gasoline != null && cairo != null)
                 {
-                    CarId = Guid.NewGuid().ToString(),
-                    Year = 2020,
-                    Price = 250000,
-                    Description = "Admin Corolla Sedan Cairo",
-                    ModelId = 1,        // Corolla
-                    BodyTypeId = 1,     // Sedan
-                    FuelId = 1,         // Gasoline
-                    LocId = 1,          // Cairo
-                    AdminId = adminId,
-                    VendorId = null,
-                    CreatedDate = DateTime.UtcNow,
-                    ImageUrls = null
-                });
+                    context.Cars.Add(new Car
+                    {
+                        CarId = Guid.NewGuid().ToString(),
+                        Year = 2020,
+                        Price = 250000,
+                        Description = "Admin Corolla Sedan Cairo",
+                        ModelId = corolla.ModelId,
+                        BodyTypeId = sedan.BodyId,
+                        FuelId = gasoline.FuelId,
+                        LocId = cairo.LocId,
+                        AdminId = adminId,
+                        VendorId = null,
+                        CreatedDate = DateTime.UtcNow,
+                        ImageUrls = null
+                    });
+                }
 
                 // Car owned by Vendor
-                context.Cars.Add(new Car
+                if (civic != null && hatchback != null && diesel != null && alexandria != null)
                 {
-                    CarId = Guid.NewGuid().ToString(),
-                    Year = 2022,
-                    Price = 350000,
-                    Description = "Vendor Civic Hatchback Alexandria",
-                    ModelId = 3,        // Civic
-                    BodyTypeId = 3,     // Hatchback
-                    FuelId = 2,         // Diesel
-                    LocId = 2,          // Alexandria
-                    AdminId = null,
-                    VendorId = vendorUser.Id,
-                    CreatedDate = DateTime.UtcNow,
-                    ImageUrls = null
-                });
+                    context.Cars.Add(new Car
+                    {
+                        CarId = Guid.NewGuid().ToString(),
+                        Year = 2022,
+                        Price = 350000,
+                        Description = "Vendor Civic Hatchback Alexandria",
+                        ModelId = civic.ModelId,
+                        BodyTypeId = hatchback.BodyId,
+                        FuelId = diesel.FuelId,
+                        LocId = alexandria.LocId,
+                        AdminId = null,
+                        VendorId = vendorUser.Id,
+                        CreatedDate = DateTime.UtcNow,
+                        ImageUrls = null
+                    });
+                }
 
                 await context.SaveChangesAsync();
             }
