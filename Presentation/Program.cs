@@ -140,14 +140,19 @@ namespace Presentation
 
 
             app.MapControllers();
+
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
                 var config = services.GetRequiredService<IConfiguration>();
 
-                DbInitializer.SeedAdminAsync(services, config)
-                             .GetAwaiter()
-                             .GetResult();
+                await DbInitializer.SeedAdminAsync(services, config);
+
+                // Seed test data for Swagger testing (Development only)
+                if (app.Environment.IsDevelopment())
+                {
+                    await DbInitializer.SeedTestDataAsync(services);
+                }
             }
 
             app.Run();

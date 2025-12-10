@@ -15,5 +15,6 @@ namespace DAL.Repository
         void Update(Tentity entity);
         void Delete(Tentity entity);
         int Count(Expression<Func<Tentity, bool>>? predicate = null);
+        bool Any(Expression<Func<Tentity, bool>> predicate);
     }
 }

@@ -108,6 +108,24 @@ namespace BLL.Manager.CarManager
                 throw new ArgumentException($"Model with ID {request.ModelId} not found");
             }
 
+            // Validate BodyTypeId exists
+            if (!UnitOfWork.BodyTypeRepo.Any(b => b.BodyId == request.BodyTypeId))
+            {
+                throw new ArgumentException($"Body Type with ID {request.BodyTypeId} not found");
+            }
+
+            // Validate FuelId exists
+            if (!UnitOfWork.FuelTypeRepo.Any(f => f.FuelId == request.FuelId))
+            {
+                throw new ArgumentException($"Fuel Type with ID {request.FuelId} not found");
+            }
+
+            // Validate LocId exists
+            if (!UnitOfWork.LocationCityRepo.Any(l => l.LocId == request.LocId))
+            {
+                throw new ArgumentException($"Location with ID {request.LocId} not found");
+            }
+
             var entity = request.ToEntity(adminId, vendorId);
 
             // Save images if provided
@@ -153,6 +171,24 @@ namespace BLL.Manager.CarManager
                 throw new ArgumentException($"Model with ID {request.ModelId} not found");
             }
 
+            // Validate BodyTypeId exists
+            if (!UnitOfWork.BodyTypeRepo.Any(b => b.BodyId == request.BodyTypeId))
+            {
+                throw new ArgumentException($"Body Type with ID {request.BodyTypeId} not found");
+            }
+
+            // Validate FuelId exists
+            if (!UnitOfWork.FuelTypeRepo.Any(f => f.FuelId == request.FuelId))
+            {
+                throw new ArgumentException($"Fuel Type with ID {request.FuelId} not found");
+            }
+
+            // Validate LocId exists
+            if (!UnitOfWork.LocationCityRepo.Any(l => l.LocId == request.LocId))
+            {
+                throw new ArgumentException($"Location with ID {request.LocId} not found");
+            }
+
             // Manual mapping update logic
             existingCar.Year = request.Year;
             existingCar.Price = request.Price;
@@ -187,7 +223,17 @@ namespace BLL.Manager.CarManager
 
             UnitOfWork.CarRepo.Update(existingCar);
             UnitOfWork.Save();
-            return existingCar.ToResponse();
+
+            // Reload entity with includes to get related names
+            var reloadedEntity = UnitOfWork.CarRepo.GetAll(query =>
+                query.Where(c => c.CarId == existingCar.CarId)
+                     .Include(c => c.Model).ThenInclude(m => m.Make)
+                     .Include(c => c.BodyType)
+                     .Include(c => c.FuelType)
+                     .Include(c => c.LocationCity)
+            ).FirstOrDefault();
+
+            return reloadedEntity?.ToResponse() ?? existingCar.ToResponse();
         }
 
         public void Delete(string id, string userId, string userRole)

@@ -56,6 +56,10 @@ namespace DAL.Repository
             return dbcontext.Set<Tentity>().Where(predicate).Count();
         }
 
+        public bool Any(Expression<Func<Tentity, bool>> predicate)
+        {
+            return dbcontext.Set<Tentity>().Any(predicate);
+        }
     }
 }
 

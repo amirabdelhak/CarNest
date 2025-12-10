@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Presentation.DTOs.Requests
 {
@@ -10,7 +9,6 @@ namespace Presentation.DTOs.Requests
         public int Year { get; set; }
 
         [Required(ErrorMessage = "Price is required")]
-        [Column(TypeName = "decimal(18,2)")]
         [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
         public decimal Price { get; set; }
 
