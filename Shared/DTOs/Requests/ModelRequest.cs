@@ -6,5 +6,8 @@ namespace Presentation.DTOs.Requests
     {
         [Required, MaxLength(128)]
         public string ModelName { get; set; }
+
+        [Required(ErrorMessage = "Make is required")]
+        public int MakeId { get; set; }
     }
 }

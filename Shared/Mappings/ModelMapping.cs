@@ -10,13 +10,15 @@ namespace Presentation.Mappings
             new ModelResponse
             {
                 ModelId = e.ModelId,
-                ModelName = e.ModelName
+                ModelName = e.ModelName,
+                MakeId = e.MakeId
             };
 
         public static Model ToEntity(this ModelRequest r) =>
             new Model
             {
-                ModelName = r.ModelName
+                ModelName = r.ModelName,
+                MakeId = r.MakeId
             };
     }
 }
