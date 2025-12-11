@@ -10,7 +10,7 @@ namespace DAL.Entity
         public string CarId { get; set; }
 
         [Required]
-        [Range(1900, 2100, ErrorMessage = "Year must be between 1900 and 2100")]
+        [Range(1900, 2026, ErrorMessage = "Year must be between 1900 and 2026")]
         public int Year { get; set; }
 
         [Required]

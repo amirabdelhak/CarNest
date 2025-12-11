@@ -5,7 +5,7 @@ namespace Presentation.DTOs.Requests
     public class CarRequest
     {
         [Required(ErrorMessage = "Year is required")]
-        [Range(1900, 2100, ErrorMessage = "Year must be between 1900 and 2100")]
+        [Range(1900, 2026, ErrorMessage = "Year must be between 1900 and 2026")]
         public int Year { get; set; }
 
         [Required(ErrorMessage = "Price is required")]
