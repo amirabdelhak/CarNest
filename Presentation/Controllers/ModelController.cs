@@ -25,7 +25,7 @@ namespace Presentation.Controllers
 
         [HttpGet("{id:int}")]
         [AllowAnonymous]
-        public IActionResult GetById() => Ok(manager.GetAll());
+        public IActionResult GetById(int id) => Ok(manager.GetById(id));
 
         [HttpPost]
         public IActionResult Add(ModelRequest request)

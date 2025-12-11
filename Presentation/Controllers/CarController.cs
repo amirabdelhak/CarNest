@@ -1,8 +1,8 @@
+using System.Security.Claims;
 using BLL.Manager.CarManager;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.DTOs.Requests;
-using System.Security.Claims;
 
 namespace Presentation.Controllers
 {
@@ -36,7 +36,6 @@ namespace Presentation.Controllers
             // Otherwise return all cars (Admin, Customer, or anonymous)
             return Ok(manager.GetAll(request));
         }
-
         /// <summary>
         /// Get car details by ID. Accessible to everyone.
         /// </summary>
@@ -85,8 +84,8 @@ namespace Presentation.Controllers
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,Vendor")]
         public IActionResult Update(
-            string id, 
-            [FromForm] CarRequest request, 
+            string id,
+            [FromForm] CarRequest request,
             [FromForm] IFormFileCollection? newImages,
             [FromForm] string? imagesToDeleteJson)
         {
