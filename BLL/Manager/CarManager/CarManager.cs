@@ -321,11 +321,11 @@ namespace BLL.Manager.CarManager
             // Optional: Search term filter
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
             {
-                var term = request.SearchTerm.Trim();
+                var term = request.SearchTerm.Trim().ToLower();
                 query = query.Where(c =>
-                    EF.Functions.Like(c.Model.Make.MakeName, $"%{term}%") ||
-                    EF.Functions.Like(c.Model.ModelName, $"%{term}%") ||
-                    (c.Description != null && EF.Functions.Like(c.Description, $"%{term}%"))
+                    c.Model.Make.MakeName.ToLower().Contains(term) ||
+                    c.Model.ModelName.ToLower().Contains(term) ||
+                    (c.Description != null && c.Description.ToLower().Contains(term))
                 );
             }
 
