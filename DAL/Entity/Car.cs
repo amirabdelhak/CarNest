@@ -24,7 +24,7 @@ namespace DAL.Entity
         [Required]
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
-        // Image URLs stored as JSON array (e.g., ["images/cars/guid1.jpg", "images/cars/guid2.jpg"])
+        /// Image URLs stored as JSON array (e.g., ["images/cars/guid1.jpg", "images/cars/guid2.jpg"])
         [Column(TypeName = "nvarchar(max)")]
         public string? ImageUrls { get; set; }
 
