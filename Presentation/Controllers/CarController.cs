@@ -96,9 +96,16 @@ namespace Presentation.Controllers
             {
                 // Parse images to delete from JSON
                 List<string>? imagesToDelete = null;
-                if (!string.IsNullOrEmpty(imagesToDeleteJson))
+                if (!string.IsNullOrWhiteSpace(imagesToDeleteJson))  // Changed from IsNullOrEmpty
                 {
-                    imagesToDelete = System.Text.Json.JsonSerializer.Deserialize<List<string>>(imagesToDeleteJson);
+                    try
+                    {
+                        imagesToDelete = System.Text.Json.JsonSerializer.Deserialize<List<string>>(imagesToDeleteJson);
+                    }
+                    catch (System.Text.Json.JsonException)
+                    {
+                        return BadRequest(new { Message = "Invalid JSON format for imagesToDeleteJson" });
+                    }
                 }
 
                 var result = manager.Update(id, request, userId, userRole, newImages, imagesToDelete);
