@@ -293,14 +293,9 @@ All foreign keys (MakeId, ModelId, BodyTypeId, FuelId, LocId) are required.
 
 This project is licensed under the MIT License.
 
-## 👥 Authors
-
-- **Mostafa G. Zain** - Initial work
-- **Amir Abdelhak** - Repository maintainer
 
 ## 🙏 Acknowledgments
 
-- Built with Clean Architecture principles
 - Follows RESTful API best practices
 - Implements SOLID principles
 
