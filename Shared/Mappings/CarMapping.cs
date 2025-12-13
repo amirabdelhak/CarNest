@@ -24,7 +24,10 @@ namespace Presentation.Mappings
                 CreatedDate = e.CreatedDate,
                 ImageUrls = string.IsNullOrEmpty(e.ImageUrls)
                     ? new List<string>()
-                    : JsonSerializer.Deserialize<List<string>>(e.ImageUrls) ?? new List<string>()
+                    : JsonSerializer.Deserialize<List<string>>(e.ImageUrls) ?? new List<string>(),
+                Condition = e.Condition,
+                Mileage = e.Mileage,
+                LastInspectionDate = e.LastInspectionDate
             };
 
         public static CarDetailResponse ToDetailResponse(this Car e) =>
@@ -50,7 +53,10 @@ namespace Presentation.Mappings
                     : JsonSerializer.Deserialize<List<string>>(e.ImageUrls) ?? new List<string>(),
                 PublisherName = e.Admin != null ? $"{e.Admin.FirstName} {e.Admin.LastName}" : (e.Vendor != null ? $"{e.Vendor.FirstName} {e.Vendor.LastName}" : null),
                 PublisherPhone = e.Admin != null ? e.Admin.PhoneNumber : (e.Vendor != null ? e.Vendor.PhoneNumber : null),
-                PublisherEmail = e.Admin != null ? e.Admin.Email : (e.Vendor != null ? e.Vendor.Email : null)
+                PublisherEmail = e.Admin != null ? e.Admin.Email : (e.Vendor != null ? e.Vendor.Email : null),
+                Condition = e.Condition,
+                Mileage = e.Mileage,
+                LastInspectionDate = e.LastInspectionDate
             };
 
         public static Car ToEntity(this CarRequest r, string? adminId, string? vendorId) =>
@@ -67,7 +73,10 @@ namespace Presentation.Mappings
                 AdminId = adminId,
                 VendorId = vendorId,
                 CreatedDate = DateTime.UtcNow,
-                ImageUrls = null // Will be set by manager after saving images
+                ImageUrls = null, // Will be set by manager after saving images
+                Condition = r.Condition,
+                Mileage = r.Mileage,
+                LastInspectionDate = r.LastInspectionDate
             };
     }
 }

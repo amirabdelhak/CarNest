@@ -175,6 +175,7 @@ namespace Presentation
             {
                 // Get the saved entities to reference their IDs
                 var corolla = await context.Models.FirstOrDefaultAsync(m => m.ModelName == "Corolla");
+                var camry = await context.Models.FirstOrDefaultAsync(m => m.ModelName == "Camry");
                 var civic = await context.Models.FirstOrDefaultAsync(m => m.ModelName == "Civic");
                 var sedan = await context.BodyTypes.FirstOrDefaultAsync(b => b.Name == "Sedan");
                 var hatchback = await context.BodyTypes.FirstOrDefaultAsync(b => b.Name == "Hatchback");
@@ -187,14 +188,15 @@ namespace Presentation
                 var admin = await userManager.FindByNameAsync("admin");
                 var adminId = admin?.Id;
 
+                // New car (Admin)
                 if (corolla != null && sedan != null && gasoline != null && cairo != null)
                 {
                     context.Cars.Add(new Car
                     {
                         CarId = Guid.NewGuid().ToString(),
-                        Year = 2020,
-                        Price = 250000,
-                        Description = "Admin Corolla Sedan Cairo",
+                        Year = 2024,
+                        Price = 450000,
+                        Description = "Brand new Toyota Corolla 2024",
                         ModelId = corolla.ModelId,
                         BodyTypeId = sedan.BodyId,
                         FuelId = gasoline.FuelId,
@@ -202,19 +204,45 @@ namespace Presentation
                         AdminId = adminId,
                         VendorId = null,
                         CreatedDate = DateTime.UtcNow,
-                        ImageUrls = null
+                        ImageUrls = null,
+                        Condition = CarCondition.New,
+                        Mileage = null,
+                        LastInspectionDate = null
                     });
                 }
 
-                // Car owned by Vendor
+                // Used car (Admin)
+                if (camry != null && sedan != null && gasoline != null && cairo != null)
+                {
+                    context.Cars.Add(new Car
+                    {
+                        CarId = Guid.NewGuid().ToString(),
+                        Year = 2020,
+                        Price = 320000,
+                        Description = "Well-maintained Toyota Camry, single owner",
+                        ModelId = camry.ModelId,
+                        BodyTypeId = sedan.BodyId,
+                        FuelId = gasoline.FuelId,
+                        LocId = cairo.LocId,
+                        AdminId = adminId,
+                        VendorId = null,
+                        CreatedDate = DateTime.UtcNow,
+                        ImageUrls = null,
+                        Condition = CarCondition.Used,
+                        Mileage = 45000,
+                        LastInspectionDate = null
+                    });
+                }
+
+                // Certified Pre-Owned car (Vendor)
                 if (civic != null && hatchback != null && diesel != null && alexandria != null)
                 {
                     context.Cars.Add(new Car
                     {
                         CarId = Guid.NewGuid().ToString(),
                         Year = 2022,
-                        Price = 350000,
-                        Description = "Vendor Civic Hatchback Alexandria",
+                        Price = 380000,
+                        Description = "Honda Civic with full inspection report",
                         ModelId = civic.ModelId,
                         BodyTypeId = hatchback.BodyId,
                         FuelId = diesel.FuelId,
@@ -222,7 +250,33 @@ namespace Presentation
                         AdminId = null,
                         VendorId = vendorUser.Id,
                         CreatedDate = DateTime.UtcNow,
-                        ImageUrls = null
+                        ImageUrls = null,
+                        Condition = CarCondition.Used,  // Changed from CertifiedPreOwned
+                        Mileage = 25000,
+                        LastInspectionDate = DateTime.UtcNow.AddDays(-30)
+                    });
+                }
+
+                // Used car (Vendor)
+                if (corolla != null && sedan != null && gasoline != null && alexandria != null)
+                {
+                    context.Cars.Add(new Car
+                    {
+                        CarId = Guid.NewGuid().ToString(),
+                        Year = 2019,
+                        Price = 220000,
+                        Description = "Used Toyota Corolla, good condition",
+                        ModelId = corolla.ModelId,
+                        BodyTypeId = sedan.BodyId,
+                        FuelId = gasoline.FuelId,
+                        LocId = alexandria.LocId,
+                        AdminId = null,
+                        VendorId = vendorUser.Id,
+                        CreatedDate = DateTime.UtcNow,
+                        ImageUrls = null,
+                        Condition = CarCondition.Used,
+                        Mileage = 78000,
+                        LastInspectionDate = null
                     });
                 }
 

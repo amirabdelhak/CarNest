@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using DAL.Entity;
 
 namespace Presentation.DTOs.Requests
 {
@@ -26,5 +27,13 @@ namespace Presentation.DTOs.Requests
 
         [Required(ErrorMessage = "Location is required")]
         public int LocId { get; set; }
+
+        [Required(ErrorMessage = "Condition is required")]
+        public CarCondition Condition { get; set; } = CarCondition.New;
+
+        [Range(0, int.MaxValue, ErrorMessage = "Mileage cannot be negative")]
+        public int? Mileage { get; set; }
+
+        public DateTime? LastInspectionDate { get; set; }
     }
 }

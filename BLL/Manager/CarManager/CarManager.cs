@@ -101,6 +101,9 @@ namespace BLL.Manager.CarManager
 
         public CarResponse Add(CarRequest request, string? adminId, string? vendorId, IFormFileCollection? images)
         {
+            // Validate condition-specific rules
+            ValidateConditionRules(request);
+
             // Validate ModelId exists
             var model = UnitOfWork.ModelRepo.GetById(request.ModelId);
             if (model == null)
@@ -164,6 +167,9 @@ namespace BLL.Manager.CarManager
                 throw new UnauthorizedAccessException("You can only update your own cars");
             }
 
+            // Validate condition-specific rules
+            ValidateConditionRules(request);
+
             // Validate ModelId exists
             var model = UnitOfWork.ModelRepo.GetById(request.ModelId);
             if (model == null)
@@ -197,6 +203,9 @@ namespace BLL.Manager.CarManager
             existingCar.BodyTypeId = request.BodyTypeId;
             existingCar.FuelId = request.FuelId;
             existingCar.LocId = request.LocId;
+            existingCar.Condition = request.Condition;
+            existingCar.Mileage = request.Mileage;
+            existingCar.LastInspectionDate = request.LastInspectionDate;
 
             // Handle images
             var currentImages = string.IsNullOrEmpty(existingCar.ImageUrls)
@@ -267,6 +276,30 @@ namespace BLL.Manager.CarManager
         #region Private Helper Methods
 
         /// <summary>
+        /// Validates condition-specific business rules
+        /// </summary>
+        private void ValidateConditionRules(CarRequest request)
+        {
+            // Used cars must have mileage
+            if (request.Condition == CarCondition.Used && !request.Mileage.HasValue)
+            {
+                throw new ArgumentException("Mileage is required for used cars");
+            }
+
+            // New cars should not have mileage (or should be 0)
+            if (request.Condition == CarCondition.New && request.Mileage.HasValue && request.Mileage > 0)
+            {
+                throw new ArgumentException("New cars should not have mileage greater than 0");
+            }
+
+            // Inspection date cannot be in the future
+            if (request.LastInspectionDate.HasValue && request.LastInspectionDate.Value > DateTime.UtcNow)
+            {
+                throw new ArgumentException("Last inspection date cannot be in the future");
+            }
+        }
+
+        /// <summary>
         /// Applies filtering logic to the car query based on the request parameters
         /// </summary>
         private IQueryable<Car> ApplyFilters(IQueryable<Car> query, PaginationRequest request)
@@ -316,6 +349,23 @@ namespace BLL.Manager.CarManager
             if (request.Year.HasValue)
             {
                 query = query.Where(c => c.Year == request.Year.Value);
+            }
+
+            // Filter by Condition
+            if (request.Condition.HasValue)
+            {
+                query = query.Where(c => c.Condition == request.Condition.Value);
+            }
+
+            // Filter by Mileage Range
+            if (request.MinMileage.HasValue)
+            {
+                query = query.Where(c => c.Mileage >= request.MinMileage.Value);
+            }
+
+            if (request.MaxMileage.HasValue)
+            {
+                query = query.Where(c => c.Mileage <= request.MaxMileage.Value);
             }
 
             // Optional: Search term filter

@@ -1,3 +1,5 @@
+using DAL.Entity;
+
 namespace Presentation.DTOs.Requests
 {
     public class PaginationRequest
@@ -17,6 +19,11 @@ namespace Presentation.DTOs.Requests
         public decimal? MinPrice { get; set; }
         public decimal? MaxPrice { get; set; }
         public int? Year { get; set; }
+
+        // Condition filters
+        public CarCondition? Condition { get; set; }
+        public int? MinMileage { get; set; }
+        public int? MaxMileage { get; set; }
 
         // Optional: Search term for text search
         public string? SearchTerm { get; set; }

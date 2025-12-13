@@ -28,6 +28,15 @@ namespace DAL.Entity
         [Column(TypeName = "nvarchar(max)")]
         public string? ImageUrls { get; set; }
 
+        // Used car properties
+        [Required]
+        public CarCondition Condition { get; set; } = CarCondition.New;
+
+        [Range(0, int.MaxValue, ErrorMessage = "Mileage cannot be negative")]
+        public int? Mileage { get; set; }
+        public DateTime? LastInspectionDate { get; set; }
+
+
         [Required]
         [ForeignKey("Model")]
         public int ModelId { get; set; }

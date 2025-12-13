@@ -1,4 +1,4 @@
-
+using DAL.Entity;
 
 namespace Presentation.DTOs.Responses
 {
@@ -16,5 +16,9 @@ namespace Presentation.DTOs.Responses
         public string? BodyTypeName { get; set; }
         public string? FuelName { get; set; }
         public string? LocationName { get; set; }
+
+        public CarCondition Condition { get; set; }
+        public int? Mileage { get; set; }
+        public DateTime? LastInspectionDate { get; set; }
     }
 }
