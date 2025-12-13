@@ -206,6 +206,7 @@ namespace BLL.Manager.CarManager
             existingCar.Condition = request.Condition;
             existingCar.Mileage = request.Mileage;
             existingCar.LastInspectionDate = request.LastInspectionDate;
+            existingCar.GearType = request.GearType;
 
             // Handle images
             var currentImages = string.IsNullOrEmpty(existingCar.ImageUrls)
@@ -366,6 +367,12 @@ namespace BLL.Manager.CarManager
             if (request.MaxMileage.HasValue)
             {
                 query = query.Where(c => c.Mileage <= request.MaxMileage.Value);
+            }
+
+            // Filter by Gear Type
+            if (request.GearType.HasValue)
+            {
+                query = query.Where(c => c.GearType == request.GearType.Value);
             }
 
             // Optional: Search term filter

@@ -188,7 +188,7 @@ namespace Presentation
                 var admin = await userManager.FindByNameAsync("admin");
                 var adminId = admin?.Id;
 
-                // New car (Admin)
+                // New car (Admin) - Automatic
                 if (corolla != null && sedan != null && gasoline != null && cairo != null)
                 {
                     context.Cars.Add(new Car
@@ -207,11 +207,12 @@ namespace Presentation
                         ImageUrls = null,
                         Condition = CarCondition.New,
                         Mileage = null,
-                        LastInspectionDate = null
+                        LastInspectionDate = null,
+                        GearType = GearType.Automatic
                     });
                 }
 
-                // Used car (Admin)
+                // Used car (Admin) - Manual
                 if (camry != null && sedan != null && gasoline != null && cairo != null)
                 {
                     context.Cars.Add(new Car
@@ -230,7 +231,8 @@ namespace Presentation
                         ImageUrls = null,
                         Condition = CarCondition.Used,
                         Mileage = 45000,
-                        LastInspectionDate = null
+                        LastInspectionDate = null,
+                        GearType = GearType.Manual
                     });
                 }
 
@@ -253,11 +255,12 @@ namespace Presentation
                         ImageUrls = null,
                         Condition = CarCondition.Used,  // Changed from CertifiedPreOwned
                         Mileage = 25000,
-                        LastInspectionDate = DateTime.UtcNow.AddDays(-30)
+                        LastInspectionDate = DateTime.UtcNow.AddDays(-30),
+                        GearType = GearType.Automatic
                     });
                 }
 
-                // Used car (Vendor)
+                // Used car (Vendor) - Manual
                 if (corolla != null && sedan != null && gasoline != null && alexandria != null)
                 {
                     context.Cars.Add(new Car
@@ -276,7 +279,8 @@ namespace Presentation
                         ImageUrls = null,
                         Condition = CarCondition.Used,
                         Mileage = 78000,
-                        LastInspectionDate = null
+                        LastInspectionDate = null,
+                        GearType = GearType.Manual
                     });
                 }
 

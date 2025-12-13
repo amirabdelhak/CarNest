@@ -36,6 +36,9 @@ namespace DAL.Entity
         public int? Mileage { get; set; }
         public DateTime? LastInspectionDate { get; set; }
 
+        // Gear type
+        [Required]
+        public GearType GearType { get; set; } = GearType.Manual;
 
         [Required]
         [ForeignKey("Model")]

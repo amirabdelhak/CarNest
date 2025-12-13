@@ -35,5 +35,8 @@ namespace Presentation.DTOs.Requests
         public int? Mileage { get; set; }
 
         public DateTime? LastInspectionDate { get; set; }
+
+        [Required(ErrorMessage = "Gear Type is required")]
+        public GearType GearType { get; set; } = GearType.Manual;
     }
 }

@@ -20,5 +20,7 @@ namespace Presentation.DTOs.Responses
         public CarCondition Condition { get; set; }
         public int? Mileage { get; set; }
         public DateTime? LastInspectionDate { get; set; }
+
+        public GearType GearType { get; set; }
     }
 }

@@ -27,7 +27,8 @@ namespace Presentation.Mappings
                     : JsonSerializer.Deserialize<List<string>>(e.ImageUrls) ?? new List<string>(),
                 Condition = e.Condition,
                 Mileage = e.Mileage,
-                LastInspectionDate = e.LastInspectionDate
+                LastInspectionDate = e.LastInspectionDate,
+                GearType = e.GearType
             };
 
         public static CarDetailResponse ToDetailResponse(this Car e) =>
@@ -56,7 +57,8 @@ namespace Presentation.Mappings
                 PublisherEmail = e.Admin != null ? e.Admin.Email : (e.Vendor != null ? e.Vendor.Email : null),
                 Condition = e.Condition,
                 Mileage = e.Mileage,
-                LastInspectionDate = e.LastInspectionDate
+                LastInspectionDate = e.LastInspectionDate,
+                GearType = e.GearType
             };
 
         public static Car ToEntity(this CarRequest r, string? adminId, string? vendorId) =>
@@ -73,10 +75,11 @@ namespace Presentation.Mappings
                 AdminId = adminId,
                 VendorId = vendorId,
                 CreatedDate = DateTime.UtcNow,
-                ImageUrls = null, // Will be set by manager after saving images
+                ImageUrls = null,
                 Condition = r.Condition,
                 Mileage = r.Mileage,
-                LastInspectionDate = r.LastInspectionDate
+                LastInspectionDate = r.LastInspectionDate,
+                GearType = r.GearType
             };
     }
 }

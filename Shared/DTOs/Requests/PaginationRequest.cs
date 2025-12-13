@@ -25,6 +25,9 @@ namespace Presentation.DTOs.Requests
         public int? MinMileage { get; set; }
         public int? MaxMileage { get; set; }
 
+        // Gear type filter
+        public GearType? GearType { get; set; }
+
         // Optional: Search term for text search
         public string? SearchTerm { get; set; }
     }
