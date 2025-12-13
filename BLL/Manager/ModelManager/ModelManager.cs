@@ -1,13 +1,13 @@
-﻿using DAL.Entity;
-using DAL.UnitOfWork;
-using Presentation.DTOs.Requests;
-using Presentation.DTOs.Responses;
-using Presentation.Mappings;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DAL.Entity;
+using DAL.UnitOfWork;
+using Presentation.DTOs.Requests;
+using Presentation.DTOs.Responses;
+using Presentation.Mappings;
 
 namespace BLL.Manager.ModelManager
 {
@@ -30,6 +30,13 @@ namespace BLL.Manager.ModelManager
         {
             var data = UnitOfWork.ModelRepo.GetById(id);
             return data?.ToResponse();
+        }
+
+        public IEnumerable<ModelResponse>? GetByMakeId(int makeId)
+        {
+            var data = UnitOfWork.ModelRepo.GetAll()
+                .Where(m => m.MakeId == makeId);
+            return data.Select(f => f.ToResponse());
         }
 
         public ModelResponse Add(ModelRequest request)

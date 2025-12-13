@@ -27,6 +27,11 @@ namespace Presentation.Controllers
         [AllowAnonymous]
         public IActionResult GetById(int id) => Ok(manager.GetById(id));
 
+        // Get models filtered by make ID. Used for dynamic dropdown filtering.
+        [HttpGet("by-make/{makeId:int}")]
+        [AllowAnonymous]
+        public IActionResult GetByMakeId(int makeId) => Ok(manager.GetByMakeId(makeId));
+
         [HttpPost]
         public IActionResult Add(ModelRequest request)
         {
