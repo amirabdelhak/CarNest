@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace DAL.Entity
 {
@@ -28,6 +29,30 @@ namespace DAL.Entity
         [Column(TypeName = "nvarchar(max)")]
         public string? ImageUrls { get; set; }
 
+
+        //SPECS
+        [Required]
+        [MaxLength(50)]
+        public string ExteriorColor { get; set; } = string.Empty;
+
+        [MaxLength(50)]
+        public string? InteriorColor { get; set; }
+
+        [Required]
+        [Precision(5, 2)]
+        [Range(0.1, 99.99, ErrorMessage = "Engine capacity must be between 0.1 and 99.99 liters")]
+        public decimal EngineCapacity { get; set; }
+
+        [Required]
+        [Range(1, 2000, ErrorMessage = "Horsepower must be between 1 and 2000")]
+        public int Horsepower { get; set; }
+
+        [Required]
+        public DrivetrainType DrivetrainType { get; set; } = DrivetrainType.FWD;
+
+        [Required]
+        public GearType GearType { get; set; } = GearType.Manual;
+
         // Used car properties
         [Required]
         public CarCondition Condition { get; set; } = CarCondition.New;
@@ -35,10 +60,6 @@ namespace DAL.Entity
         [Range(0, int.MaxValue, ErrorMessage = "Mileage cannot be negative")]
         public int? Mileage { get; set; }
         public DateTime? LastInspectionDate { get; set; }
-
-        // Gear type
-        [Required]
-        public GearType GearType { get; set; } = GearType.Manual;
 
         [Required]
         [ForeignKey("Model")]
@@ -59,6 +80,7 @@ namespace DAL.Entity
         [ForeignKey("LocationCity")]
         public int LocId { get; set; }
         public virtual LocationCity LocationCity { get; set; }
+
 
         [MaxLength(450)]
         [ForeignKey("Admin")]

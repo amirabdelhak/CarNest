@@ -28,7 +28,13 @@ namespace Presentation.Mappings
                 Condition = e.Condition,
                 Mileage = e.Mileage,
                 LastInspectionDate = e.LastInspectionDate,
-                GearType = e.GearType
+
+                GearType = e.GearType,
+                ExteriorColor = e.ExteriorColor,
+                InteriorColor = e.InteriorColor,
+                EngineCapacity = e.EngineCapacity,
+                Horsepower = e.Horsepower,
+                DrivetrainType = e.DrivetrainType
             };
 
         public static CarDetailResponse ToDetailResponse(this Car e) =>
@@ -58,7 +64,13 @@ namespace Presentation.Mappings
                 Condition = e.Condition,
                 Mileage = e.Mileage,
                 LastInspectionDate = e.LastInspectionDate,
-                GearType = e.GearType
+
+                GearType = e.GearType,
+                ExteriorColor = e.ExteriorColor,
+                InteriorColor = e.InteriorColor,
+                EngineCapacity = e.EngineCapacity,
+                Horsepower = e.Horsepower,
+                DrivetrainType = e.DrivetrainType
             };
 
         public static Car ToEntity(this CarRequest r, string? adminId, string? vendorId) =>
@@ -79,7 +91,13 @@ namespace Presentation.Mappings
                 Condition = r.Condition,
                 Mileage = r.Mileage,
                 LastInspectionDate = r.LastInspectionDate,
-                GearType = r.GearType
+
+                GearType = r.GearType,
+                ExteriorColor = r.ExteriorColor,
+                InteriorColor = r.InteriorColor,
+                EngineCapacity = r.EngineCapacity,
+                Horsepower = r.Horsepower,
+                DrivetrainType = r.DrivetrainType
             };
     }
 }

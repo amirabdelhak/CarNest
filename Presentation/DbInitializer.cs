@@ -208,7 +208,14 @@ namespace Presentation
                         Condition = CarCondition.New,
                         Mileage = null,
                         LastInspectionDate = null,
-                        GearType = GearType.Automatic
+                        GearType = GearType.Automatic,
+
+                        // specs
+                        ExteriorColor = "White",
+                        InteriorColor = "Black",
+                        EngineCapacity = 1.6m,
+                        Horsepower = 132,
+                        DrivetrainType = DrivetrainType.FWD
                     });
                 }
 
@@ -232,11 +239,18 @@ namespace Presentation
                         Condition = CarCondition.Used,
                         Mileage = 45000,
                         LastInspectionDate = null,
-                        GearType = GearType.Manual
+                        GearType = GearType.Manual,
+
+                        // specs
+                        ExteriorColor = "Black",
+                        InteriorColor = "Beige",
+                        EngineCapacity = 2.5m,
+                        Horsepower = 203,
+                        DrivetrainType = DrivetrainType.FWD
                     });
                 }
 
-                // Certified Pre-Owned car (Vendor)
+                // Used car (Vendor)
                 if (civic != null && hatchback != null && diesel != null && alexandria != null)
                 {
                     context.Cars.Add(new Car
@@ -256,7 +270,14 @@ namespace Presentation
                         Condition = CarCondition.Used,  // Changed from CertifiedPreOwned
                         Mileage = 25000,
                         LastInspectionDate = DateTime.UtcNow.AddDays(-30),
-                        GearType = GearType.Automatic
+                        GearType = GearType.Automatic,
+
+                        // specs
+                        ExteriorColor = "Blue",
+                        InteriorColor = "Gray",
+                        EngineCapacity = 1.5m,
+                        Horsepower = 158,
+                        DrivetrainType = DrivetrainType.FWD
                     });
                 }
 
@@ -280,7 +301,14 @@ namespace Presentation
                         Condition = CarCondition.Used,
                         Mileage = 78000,
                         LastInspectionDate = null,
-                        GearType = GearType.Manual
+                        GearType = GearType.Manual,
+
+                        // specs
+                        ExteriorColor = "Silver",
+                        InteriorColor = "Black",
+                        EngineCapacity = 1.8m,
+                        Horsepower = 140,
+                        DrivetrainType = DrivetrainType.FWD
                     });
                 }
 

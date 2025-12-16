@@ -21,6 +21,12 @@ namespace Presentation.DTOs.Responses
         public int? Mileage { get; set; }
         public DateTime? LastInspectionDate { get; set; }
 
+        //specs
         public GearType GearType { get; set; }
+        public string ExteriorColor { get; set; }
+        public string? InteriorColor { get; set; }
+        public decimal EngineCapacity { get; set; }
+        public int Horsepower { get; set; }
+        public DrivetrainType DrivetrainType { get; set; }
     }
 }

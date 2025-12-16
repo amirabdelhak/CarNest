@@ -206,7 +206,13 @@ namespace BLL.Manager.CarManager
             existingCar.Condition = request.Condition;
             existingCar.Mileage = request.Mileage;
             existingCar.LastInspectionDate = request.LastInspectionDate;
+
             existingCar.GearType = request.GearType;
+            existingCar.ExteriorColor = request.ExteriorColor;
+            existingCar.InteriorColor = request.InteriorColor;
+            existingCar.EngineCapacity = request.EngineCapacity;
+            existingCar.Horsepower = request.Horsepower;
+            existingCar.DrivetrainType = request.DrivetrainType;
 
             // Handle images
             var currentImages = string.IsNullOrEmpty(existingCar.ImageUrls)
@@ -374,6 +380,34 @@ namespace BLL.Manager.CarManager
             {
                 query = query.Where(c => c.GearType == request.GearType.Value);
             }
+
+            // Spec Filters
+
+            if (request.DrivetrainType.HasValue)
+            {
+                query = query.Where(c => c.DrivetrainType == request.DrivetrainType.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.ExteriorColor))
+            {
+                query = query.Where(c => c.ExteriorColor.ToLower() == request.ExteriorColor.ToLower());
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.InteriorColor))
+            {
+                query = query.Where(c => c.InteriorColor != null && c.InteriorColor.ToLower() == request.InteriorColor.ToLower());
+            }
+
+            if (request.EngineCapacity.HasValue)
+            {
+                query = query.Where(c => c.EngineCapacity <= request.EngineCapacity.Value); //all cars less than the searched target
+            }
+
+            if (request.Horsepower.HasValue)
+            {
+                query = query.Where(c => c.Horsepower <= request.Horsepower.Value); //all cars less than the searched target
+            }
+
 
             // Optional: Search term filter
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))

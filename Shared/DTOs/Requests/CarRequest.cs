@@ -36,7 +36,27 @@ namespace Presentation.DTOs.Requests
 
         public DateTime? LastInspectionDate { get; set; }
 
+
+        //specs
         [Required(ErrorMessage = "Gear Type is required")]
         public GearType GearType { get; set; } = GearType.Manual;
+
+        [Required(ErrorMessage = "Exterior color is required")]
+        [MaxLength(50, ErrorMessage = "Exterior color cannot exceed 50 characters")]
+        public string ExteriorColor { get; set; } = string.Empty;
+
+        [MaxLength(50, ErrorMessage = "Interior color cannot exceed 50 characters")]
+        public string? InteriorColor { get; set; }
+
+        [Required(ErrorMessage = "Engine capacity is required")]
+        [Range(0.1, 99.99, ErrorMessage = "Engine capacity must be between 0.1 and 99.99 liters")]
+        public decimal EngineCapacity { get; set; }
+
+        [Required(ErrorMessage = "Horsepower is required")]
+        [Range(1, 2000, ErrorMessage = "Horsepower must be between 1 and 2000")]
+        public int Horsepower { get; set; }
+
+        [Required(ErrorMessage = "Drivetrain type is required")]
+        public DrivetrainType DrivetrainType { get; set; } = DrivetrainType.FWD;
     }
 }

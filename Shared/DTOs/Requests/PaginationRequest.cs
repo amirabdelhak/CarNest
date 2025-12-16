@@ -25,8 +25,13 @@ namespace Presentation.DTOs.Requests
         public int? MinMileage { get; set; }
         public int? MaxMileage { get; set; }
 
-        // Gear type filter
+        // specs filters
         public GearType? GearType { get; set; }
+        public string? ExteriorColor { get; set; }
+        public string? InteriorColor { get; set; }
+        public decimal? EngineCapacity { get; set; }
+        public int? Horsepower { get; set; }
+        public DrivetrainType? DrivetrainType { get; set; }
 
         // Optional: Search term for text search
         public string? SearchTerm { get; set; }
