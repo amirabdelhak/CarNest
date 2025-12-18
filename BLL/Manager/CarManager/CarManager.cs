@@ -393,13 +393,11 @@ namespace BLL.Manager.CarManager
                 query = query.Where(c => c.ExteriorColor.ToLower() == request.ExteriorColor.ToLower());
             }
 
-
             if (!string.IsNullOrWhiteSpace(request.InteriorColor))
             {
                 query = query.Where(c => c.InteriorColor != null && c.InteriorColor.ToLower() == request.InteriorColor.ToLower());
             }
 
-            //these filters are unlikely to be used
             if (request.EngineCapacity.HasValue)
             {
                 query = query.Where(c => c.EngineCapacity <= request.EngineCapacity.Value); //all cars less than the searched target
