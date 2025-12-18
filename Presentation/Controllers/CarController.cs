@@ -19,35 +19,27 @@ namespace Presentation.Controllers
         }
 
         /// <summary>
-        /// Get all cars. Public access - no authentication required.
+        /// Get all cars. Vendors see only their cars, others see all cars.
         /// </summary>
         [HttpGet]
-        [AllowAnonymous]
         public IActionResult GetAll([FromQuery] PaginationRequest request)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userRole = User.FindFirstValue(ClaimTypes.Role);
+
+            // If Vendor, return only their cars
+            if (userRole == "Vendor" && !string.IsNullOrEmpty(userId))
+            {
+                return Ok(manager.GetCarsByVendor(request, userId));
+            }
+
+            // Otherwise return all cars (Admin, Customer, or anonymous)
             return Ok(manager.GetAll(request));
         }
-
         /// <summary>
-        /// Get only the vendor's own cars for inventory management.
-        /// </summary>
-        [HttpGet("my-cars")]
-        [Authorize(Roles = "Vendor")]
-        public IActionResult GetMyCars([FromQuery] PaginationRequest request)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized(new { Message = "User ID not found in token" });
-
-            return Ok(manager.GetCarsByVendor(request, userId));
-        }
-
-        /// <summary>
-        /// Get car details by ID. Public access - no authentication required.
+        /// Get car details by ID. Accessible to everyone.
         /// </summary>
         [HttpGet("{id}")]
-        [AllowAnonymous]
         public IActionResult GetById(string id)
         {
             var result = manager.GetById(id);
@@ -104,7 +96,7 @@ namespace Presentation.Controllers
             {
                 // Parse images to delete from JSON
                 List<string>? imagesToDelete = null;
-                if (!string.IsNullOrWhiteSpace(imagesToDeleteJson))
+                if (!string.IsNullOrWhiteSpace(imagesToDeleteJson))  // Changed from IsNullOrEmpty
                 {
                     try
                     {
