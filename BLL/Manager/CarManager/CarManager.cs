@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Text.Json;
 using DAL.Entity;
 using DAL.UnitOfWork;
@@ -23,15 +24,17 @@ namespace BLL.Manager.CarManager
             this.webRootPath = webRootPath;
         }
 
-        public PagedResponse<CarResponse> GetAll(PaginationRequest request)
+        public async Task<PagedResponse<CarResponse>> GetAllAsync(PaginationRequest request)
         {
             // Start with base query including all necessary relationships
-            var query = UnitOfWork.CarRepo.GetAll(q =>
+            var dataList = await UnitOfWork.CarRepo.GetAllAsync(q =>
                 q.Include(c => c.Model).ThenInclude(m => m.Make)
                  .Include(c => c.BodyType)
                  .Include(c => c.FuelType)
                  .Include(c => c.LocationCity)
-            ).AsQueryable();
+            );
+
+            var query = dataList.AsQueryable();
 
             // Apply filters
             query = ApplyFilters(query, request);
@@ -53,16 +56,18 @@ namespace BLL.Manager.CarManager
             );
         }
 
-        public PagedResponse<CarResponse> GetCarsByVendor(PaginationRequest request, string vendorId)
+        public async Task<PagedResponse<CarResponse>> GetCarsByVendorAsync(PaginationRequest request, string vendorId)
         {
             // Start with vendor-specific query
-            var query = UnitOfWork.CarRepo.GetAll(q =>
+            var dataList = await UnitOfWork.CarRepo.GetAllAsync(q =>
                 q.Where(c => c.VendorId == vendorId)
                  .Include(c => c.Model).ThenInclude(m => m.Make)
                  .Include(c => c.BodyType)
                  .Include(c => c.FuelType)
                  .Include(c => c.LocationCity)
-            ).AsQueryable();
+            );
+            
+            var query = dataList.AsQueryable();
 
             // Apply filters
             query = ApplyFilters(query, request);
@@ -84,9 +89,9 @@ namespace BLL.Manager.CarManager
             );
         }
 
-        public CarDetailResponse? GetById(string id)
+        public async Task<CarDetailResponse?> GetByIdAsync(string id)
         {
-            var data = UnitOfWork.CarRepo.GetAll(query =>
+            var dataList = await UnitOfWork.CarRepo.GetAllAsync(query =>
                 query.Where(c => c.CarId == id)
                      .Include(c => c.Model).ThenInclude(m => m.Make)
                      .Include(c => c.BodyType)
@@ -94,37 +99,39 @@ namespace BLL.Manager.CarManager
                      .Include(c => c.LocationCity)
                      .Include(c => c.Admin)
                      .Include(c => c.Vendor)
-            ).FirstOrDefault();
+            );
+            
+            var data = dataList.FirstOrDefault();
 
             return data?.ToDetailResponse();
         }
 
-        public CarResponse Add(CarRequest request, string? adminId, string? vendorId, IFormFileCollection? images)
+        public async Task<CarResponse> AddAsync(CarRequest request, string? adminId, string? vendorId, IFormFileCollection? images)
         {
             // Validate condition-specific rules
             ValidateConditionRules(request);
 
             // Validate ModelId exists
-            var model = UnitOfWork.ModelRepo.GetById(request.ModelId);
+            var model = await UnitOfWork.ModelRepo.GetByIdAsync(request.ModelId);
             if (model == null)
             {
                 throw new ArgumentException($"Model with ID {request.ModelId} not found");
             }
 
             // Validate BodyTypeId exists
-            if (!UnitOfWork.BodyTypeRepo.Any(b => b.BodyId == request.BodyTypeId))
+            if (!await UnitOfWork.BodyTypeRepo.AnyAsync(b => b.BodyId == request.BodyTypeId))
             {
                 throw new ArgumentException($"Body Type with ID {request.BodyTypeId} not found");
             }
 
             // Validate FuelId exists
-            if (!UnitOfWork.FuelTypeRepo.Any(f => f.FuelId == request.FuelId))
+            if (!await UnitOfWork.FuelTypeRepo.AnyAsync(f => f.FuelId == request.FuelId))
             {
                 throw new ArgumentException($"Fuel Type with ID {request.FuelId} not found");
             }
 
             // Validate LocId exists
-            if (!UnitOfWork.LocationCityRepo.Any(l => l.LocId == request.LocId))
+            if (!await UnitOfWork.LocationCityRepo.AnyAsync(l => l.LocId == request.LocId))
             {
                 throw new ArgumentException($"Location with ID {request.LocId} not found");
             }
@@ -139,23 +146,25 @@ namespace BLL.Manager.CarManager
             }
 
             UnitOfWork.CarRepo.Add(entity);
-            UnitOfWork.Save();
+            await UnitOfWork.SaveAsync();
 
             // Reload entity with includes to get related names
-            var reloadedEntity = UnitOfWork.CarRepo.GetAll(query =>
+            var reloadedList = await UnitOfWork.CarRepo.GetAllAsync(query =>
                 query.Where(c => c.CarId == entity.CarId)
                      .Include(c => c.Model).ThenInclude(m => m.Make)
                      .Include(c => c.BodyType)
                      .Include(c => c.FuelType)
                      .Include(c => c.LocationCity)
-            ).FirstOrDefault();
+            );
+            
+            var reloadedEntity = reloadedList.FirstOrDefault();
 
             return reloadedEntity?.ToResponse() ?? entity.ToResponse();
         }
 
-        public CarResponse Update(string id, CarRequest request, string userId, string userRole, IFormFileCollection? newImages, List<string>? imagesToDelete)
+        public async Task<CarResponse> UpdateAsync(string id, CarRequest request, string userId, string userRole, IFormFileCollection? newImages, List<string>? imagesToDelete)
         {
-            var existingCar = UnitOfWork.CarRepo.GetById(id);
+            var existingCar = await UnitOfWork.CarRepo.GetByIdAsync(id);
             if (existingCar == null)
             {
                 throw new Exception($"Car with ID {id} not found");
@@ -171,26 +180,26 @@ namespace BLL.Manager.CarManager
             ValidateConditionRules(request);
 
             // Validate ModelId exists
-            var model = UnitOfWork.ModelRepo.GetById(request.ModelId);
+            var model = await UnitOfWork.ModelRepo.GetByIdAsync(request.ModelId);
             if (model == null)
             {
                 throw new ArgumentException($"Model with ID {request.ModelId} not found");
             }
 
             // Validate BodyTypeId exists
-            if (!UnitOfWork.BodyTypeRepo.Any(b => b.BodyId == request.BodyTypeId))
+            if (!await UnitOfWork.BodyTypeRepo.AnyAsync(b => b.BodyId == request.BodyTypeId))
             {
                 throw new ArgumentException($"Body Type with ID {request.BodyTypeId} not found");
             }
 
             // Validate FuelId exists
-            if (!UnitOfWork.FuelTypeRepo.Any(f => f.FuelId == request.FuelId))
+            if (!await UnitOfWork.FuelTypeRepo.AnyAsync(f => f.FuelId == request.FuelId))
             {
                 throw new ArgumentException($"Fuel Type with ID {request.FuelId} not found");
             }
 
             // Validate LocId exists
-            if (!UnitOfWork.LocationCityRepo.Any(l => l.LocId == request.LocId))
+            if (!await UnitOfWork.LocationCityRepo.AnyAsync(l => l.LocId == request.LocId))
             {
                 throw new ArgumentException($"Location with ID {request.LocId} not found");
             }
@@ -238,23 +247,25 @@ namespace BLL.Manager.CarManager
                 : null;
 
             UnitOfWork.CarRepo.Update(existingCar);
-            UnitOfWork.Save();
+            await UnitOfWork.SaveAsync();
 
             // Reload entity with includes to get related names
-            var reloadedEntity = UnitOfWork.CarRepo.GetAll(query =>
+            var reloadedList = await UnitOfWork.CarRepo.GetAllAsync(query =>
                 query.Where(c => c.CarId == existingCar.CarId)
                      .Include(c => c.Model).ThenInclude(m => m.Make)
                      .Include(c => c.BodyType)
                      .Include(c => c.FuelType)
                      .Include(c => c.LocationCity)
-            ).FirstOrDefault();
+            );
+            
+            var reloadedEntity = reloadedList.FirstOrDefault();
 
             return reloadedEntity?.ToResponse() ?? existingCar.ToResponse();
         }
 
-        public void Delete(string id, string userId, string userRole)
+        public async Task DeleteAsync(string id, string userId, string userRole)
         {
-            var item = UnitOfWork.CarRepo.GetById(id);
+            var item = await UnitOfWork.CarRepo.GetByIdAsync(id);
             if (item == null)
             {
                 throw new Exception($"Car with ID {id} not found");
@@ -277,7 +288,7 @@ namespace BLL.Manager.CarManager
             }
 
             UnitOfWork.CarRepo.Delete(item);
-            UnitOfWork.Save();
+            await UnitOfWork.SaveAsync();
         }
 
         #region Private Helper Methods

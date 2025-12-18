@@ -21,40 +21,40 @@ namespace BLL.Manager.MakeManager
             this.UnitOfWork = UnitOfWork;
         }
 
-        public IEnumerable<MakeResponse> GetAll()
+        public async Task<IEnumerable<MakeResponse>> GetAllAsync()
         {
-            var data = UnitOfWork.MakeRepo.GetAll();
+            var data = await UnitOfWork.MakeRepo.GetAllAsync();
             return data.Select(l => l.ToResponse());
         }
 
-        public MakeResponse? GetById(int id)
+        public async Task<MakeResponse?> GetByIdAsync(int id)
         {
-            var data = UnitOfWork.MakeRepo.GetById(id);
+            var data = await UnitOfWork.MakeRepo.GetByIdAsync(id);
             return data?.ToResponse();
         }
 
-        public MakeResponse Add(MakeRequest request)
+        public async Task<MakeResponse> AddAsync(MakeRequest request)
         {
             var entity = request.ToEntity();
             UnitOfWork.MakeRepo.Add(entity);
-            UnitOfWork.Save();
+            await UnitOfWork.SaveAsync();
             return entity.ToResponse();
         }
 
-        public MakeResponse Update(Make make)
+        public async Task<MakeResponse> UpdateAsync(Make make)
         {
             UnitOfWork.MakeRepo.Update(make);
-            UnitOfWork.Save();
+            await UnitOfWork.SaveAsync();
             return make.ToResponse();
         }
 
-        public void Delete(int id)
+        public async Task DeleteAsync(int id)
         {
-            var item = UnitOfWork.MakeRepo.GetById(id);
+            var item = await UnitOfWork.MakeRepo.GetByIdAsync(id);
             if (item != null)
             {
                 UnitOfWork.MakeRepo.Delete(item);
-                UnitOfWork.Save();
+                await UnitOfWork.SaveAsync();
             }
         }
     }

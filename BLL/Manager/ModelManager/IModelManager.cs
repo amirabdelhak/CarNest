@@ -11,11 +11,11 @@ namespace BLL.Manager.ModelManager
 {
     public interface IModelManager
     {
-        IEnumerable<ModelResponse> GetAll();
-        ModelResponse? GetById(int id);
-        IEnumerable<ModelResponse> GetByMakeId(int MakeId);
-        ModelResponse Add(ModelRequest request);
-        ModelResponse Update(Model model);
-        void Delete(int id);
+        Task<IEnumerable<ModelResponse>> GetAllAsync();
+        Task<ModelResponse?> GetByIdAsync(int id);
+        Task<IEnumerable<ModelResponse>> GetByMakeIdAsync(int MakeId);
+        Task<ModelResponse> AddAsync(ModelRequest request);
+        Task<ModelResponse> UpdateAsync(Model model);
+        Task DeleteAsync(int id);
     }
 }

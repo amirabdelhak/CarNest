@@ -20,40 +20,40 @@ namespace BLL.Manager.FuelTypeManager
             this.UnitOfWork = UnitOfWork;
         }
 
-        public IEnumerable<FuelTypeResponse> GetAll()
+        public async Task<IEnumerable<FuelTypeResponse>> GetAllAsync()
         {
-            var data = UnitOfWork.FuelTypeRepo.GetAll();
+            var data = await UnitOfWork.FuelTypeRepo.GetAllAsync();
             return data.Select(f => f.ToResponse());
         }
 
-        public FuelTypeResponse? GetById(int id)
+        public async Task<FuelTypeResponse?> GetByIdAsync(int id)
         {
-            var data = UnitOfWork.FuelTypeRepo.GetById(id);
+            var data = await UnitOfWork.FuelTypeRepo.GetByIdAsync(id);
             return data?.ToResponse();
         }
 
-        public FuelTypeResponse Add(FuelTypeRequest request)
+        public async Task<FuelTypeResponse> AddAsync(FuelTypeRequest request)
         {
             var entity = request.ToEntity();
             UnitOfWork.FuelTypeRepo.Add(entity);
-            UnitOfWork.Save();
+            await UnitOfWork.SaveAsync();
             return entity.ToResponse();
         }
 
-        public FuelTypeResponse Update(FuelType entity)
+        public async Task<FuelTypeResponse> UpdateAsync(FuelType entity)
         {
             UnitOfWork.FuelTypeRepo.Update(entity);
-            UnitOfWork.Save();
+            await UnitOfWork.SaveAsync();
             return entity.ToResponse();
         }
 
-        public void Delete(int id)
+        public async Task DeleteAsync(int id)
         {
-            var obj = UnitOfWork.FuelTypeRepo.GetById(id);
+            var obj = await UnitOfWork.FuelTypeRepo.GetByIdAsync(id);
             if (obj != null)
             {
                 UnitOfWork.FuelTypeRepo.Delete(obj);
-                UnitOfWork.Save();
+                await UnitOfWork.SaveAsync();
             }
         }
     }

@@ -3,6 +3,7 @@ using BLL.Manager.CarManager;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.DTOs.Requests;
+using System.Threading.Tasks;
 
 namespace Presentation.Controllers
 {
@@ -22,7 +23,7 @@ namespace Presentation.Controllers
         /// Get all cars. Vendors see only their cars, others see all cars.
         /// </summary>
         [HttpGet]
-        public IActionResult GetAll([FromQuery] PaginationRequest request)
+        public async Task<IActionResult> GetAll([FromQuery] PaginationRequest request)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userRole = User.FindFirstValue(ClaimTypes.Role);
@@ -30,19 +31,19 @@ namespace Presentation.Controllers
             // If Vendor, return only their cars
             if (userRole == "Vendor" && !string.IsNullOrEmpty(userId))
             {
-                return Ok(manager.GetCarsByVendor(request, userId));
+                return Ok(await manager.GetCarsByVendorAsync(request, userId));
             }
 
             // Otherwise return all cars (Admin, Customer, or anonymous)
-            return Ok(manager.GetAll(request));
+            return Ok(await manager.GetAllAsync(request));
         }
         /// <summary>
         /// Get car details by ID. Accessible to everyone.
         /// </summary>
         [HttpGet("{id}")]
-        public IActionResult GetById(string id)
+        public async Task<IActionResult> GetById(string id)
         {
-            var result = manager.GetById(id);
+            var result = await manager.GetByIdAsync(id);
             if (result == null) return NotFound(new { Message = "Car not found" });
             return Ok(result);
         }
@@ -52,7 +53,7 @@ namespace Presentation.Controllers
         /// </summary>
         [HttpPost]
         [Authorize(Roles = "Admin,Vendor")]
-        public IActionResult Add([FromForm] CarRequest request, [FromForm] IFormFileCollection? images)
+        public async Task<IActionResult> Add([FromForm] CarRequest request, [FromForm] IFormFileCollection? images)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userRole = User.FindFirstValue(ClaimTypes.Role);
@@ -68,7 +69,7 @@ namespace Presentation.Controllers
                 string? adminId = userRole == "Admin" ? userId : null;
                 string? vendorId = userRole == "Vendor" ? userId : null;
 
-                var result = manager.Add(request, adminId, vendorId, images);
+                var result = await manager.AddAsync(request, adminId, vendorId, images);
                 return CreatedAtAction(nameof(GetById), new { id = result.CarId }, result);
             }
             catch (Exception ex)
@@ -83,7 +84,7 @@ namespace Presentation.Controllers
         /// </summary>
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,Vendor")]
-        public IActionResult Update(
+        public async Task<IActionResult> Update(
             string id,
             [FromForm] CarRequest request,
             [FromForm] IFormFileCollection? newImages,
@@ -108,7 +109,7 @@ namespace Presentation.Controllers
                     }
                 }
 
-                var result = manager.Update(id, request, userId, userRole, newImages, imagesToDelete);
+                var result = await manager.UpdateAsync(id, request, userId, userRole, newImages, imagesToDelete);
                 return Ok(result);
             }
             catch (UnauthorizedAccessException ex)
@@ -126,14 +127,14 @@ namespace Presentation.Controllers
         /// </summary>
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin,Vendor")]
-        public IActionResult Delete(string id)
+        public async Task<IActionResult> Delete(string id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userRole = User.FindFirstValue(ClaimTypes.Role);
 
             try
             {
-                manager.Delete(id, userId, userRole);
+                await manager.DeleteAsync(id, userId, userRole);
                 return Ok(new { Message = "Car and associated images deleted successfully" });
             }
             catch (UnauthorizedAccessException ex)

@@ -21,40 +21,40 @@ namespace BLL.Manager.LocationManager
             this.UnitOfWork = UnitOfWork;
         }
 
-        public IEnumerable<LocationCityResponse> GetAll()
+        public async Task<IEnumerable<LocationCityResponse>> GetAllAsync()
         {
-            var data = UnitOfWork.LocationCityRepo.GetAll();
+            var data = await UnitOfWork.LocationCityRepo.GetAllAsync();
             return data.Select(l => l.ToResponse());
         }
 
-        public LocationCityResponse? GetById(int id)
+        public async Task<LocationCityResponse?> GetByIdAsync(int id)
         {
-            var data = UnitOfWork.LocationCityRepo.GetById(id);
+            var data = await UnitOfWork.LocationCityRepo.GetByIdAsync(id);
             return data?.ToResponse();
         }
 
-        public LocationCityResponse Add(LocationCityRequest request)
+        public async Task<LocationCityResponse> AddAsync(LocationCityRequest request)
         {
             var entity = request.ToEntity();
             UnitOfWork.LocationCityRepo.Add(entity);
-            UnitOfWork.Save();
+            await UnitOfWork.SaveAsync();
             return entity.ToResponse();
         }
 
-        public LocationCityResponse Update(LocationCity entity)
+        public async Task<LocationCityResponse> UpdateAsync(LocationCity entity)
         {
             UnitOfWork.LocationCityRepo.Update(entity);
-            UnitOfWork.Save();
+            await UnitOfWork.SaveAsync();
             return entity.ToResponse();
         }
 
-        public void Delete(int id)
+        public async Task DeleteAsync(int id)
         {
-            var loc = UnitOfWork.LocationCityRepo.GetById(id);
+            var loc = await UnitOfWork.LocationCityRepo.GetByIdAsync(id);
             if (loc != null)
             {
                 UnitOfWork.LocationCityRepo.Delete(loc);
-                UnitOfWork.Save();
+                await UnitOfWork.SaveAsync();
             }
         }
     }

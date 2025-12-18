@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using Presentation.DTOs.Responses;
 using Presentation.Mappings;
 
+using System.Threading.Tasks;
+
 namespace BLL.Manager.FavoriteManager
 {
     public class FavoriteManager : IFavoriteManager
@@ -18,12 +20,13 @@ namespace BLL.Manager.FavoriteManager
             this.UnitOfWork = UnitOfWork;
         }
 
-        public FavoriteResponse AddToFavorites(string customerId, string carId)
+        public async Task<FavoriteResponse> AddToFavoritesAsync(string customerId, string carId)
         {
             // Check if already exists
-            var existing = UnitOfWork.FavoriteRepo.GetAll(query =>
+            var existingList = await UnitOfWork.FavoriteRepo.GetAllAsync(query =>
                 query.Where(f => f.CustomerId == customerId && f.CarId == carId)
-            ).FirstOrDefault();
+            );
+            var existing = existingList.FirstOrDefault();
 
             if (existing != null)
             {
@@ -38,10 +41,10 @@ namespace BLL.Manager.FavoriteManager
             };
 
             UnitOfWork.FavoriteRepo.Add(favorite);
-            UnitOfWork.Save();
+            await UnitOfWork.SaveAsync();
 
             // Get the car details with Model and Make through Model
-            var car = UnitOfWork.CarRepo.GetAll(query =>
+            var carList = await UnitOfWork.CarRepo.GetAllAsync(query =>
                 query.Where(c => c.CarId == carId)
                      .Include(c => c.Model).ThenInclude(m => m.Make)
                      .Include(c => c.BodyType)
@@ -49,7 +52,8 @@ namespace BLL.Manager.FavoriteManager
                      .Include(c => c.LocationCity)
                      .Include(c => c.Admin)
                      .Include(c => c.Vendor)
-            ).FirstOrDefault();
+            );
+            var car = carList.FirstOrDefault();
 
             return new FavoriteResponse
             {
@@ -59,19 +63,19 @@ namespace BLL.Manager.FavoriteManager
             };
         }
 
-        public void RemoveFromFavorites(string customerId, string carId)
+        public async Task RemoveFromFavoritesAsync(string customerId, string carId)
         {
-            var favorite = UnitOfWork.FavoriteRepo.GetById(customerId, carId);
+            var favorite = await UnitOfWork.FavoriteRepo.GetByIdAsync(customerId, carId);
             if (favorite != null)
             {
                 UnitOfWork.FavoriteRepo.Delete(favorite);
-                UnitOfWork.Save();
+                await UnitOfWork.SaveAsync();
             }
         }
 
-        public IEnumerable<FavoriteResponse> GetCustomerFavorites(string customerId)
+        public async Task<IEnumerable<FavoriteResponse>> GetCustomerFavoritesAsync(string customerId)
         {
-            var favorites = UnitOfWork.FavoriteRepo.GetAll(query =>
+            var favorites = await UnitOfWork.FavoriteRepo.GetAllAsync(query =>
                 query.Where(f => f.CustomerId == customerId)
                      .Include(f => f.Car)
                         .ThenInclude(c => c.Model)

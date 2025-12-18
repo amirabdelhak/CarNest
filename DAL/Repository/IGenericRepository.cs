@@ -9,12 +9,16 @@ namespace DAL.Repository
 {
     public interface IGenericRepository<Tentity> where Tentity : class
     {
-        List<Tentity> GetAll(Func<IQueryable<Tentity>, IQueryable<Tentity>>? include = null);
-        Tentity? GetById(params object[] keys);
+
+        Task<List<Tentity>> GetAllAsync(Func<IQueryable<Tentity>, IQueryable<Tentity>>? include = null);
+
+        Task<Tentity?> GetByIdAsync(params object[] keys);
         void Add(Tentity entity);
         void Update(Tentity entity);
         void Delete(Tentity entity);
-        int Count(Expression<Func<Tentity, bool>>? predicate = null);
-        bool Any(Expression<Func<Tentity, bool>> predicate);
+
+        Task<int> CountAsync(Expression<Func<Tentity, bool>>? predicate = null);
+
+        Task<bool> AnyAsync(Expression<Func<Tentity, bool>> predicate);
     }
 }

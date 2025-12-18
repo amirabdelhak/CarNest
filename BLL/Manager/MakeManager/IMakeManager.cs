@@ -11,10 +11,10 @@ namespace BLL.Manager.MakeManager
 {
     public interface IMakeManager
     {
-        IEnumerable<MakeResponse> GetAll();
-        MakeResponse? GetById(int id);
-        MakeResponse Add(MakeRequest request);
-        MakeResponse Update(Make make);
-        void Delete(int id);
+        Task<IEnumerable<MakeResponse>> GetAllAsync();
+        Task<MakeResponse?> GetByIdAsync(int id);
+        Task<MakeResponse> AddAsync(MakeRequest request);
+        Task<MakeResponse> UpdateAsync(Make make);
+        Task DeleteAsync(int id);
     }
 }

@@ -11,10 +11,10 @@ namespace BLL.Manager.FuelTypeManager
 {
     public interface IFuelTypeManager
     {
-        IEnumerable<FuelTypeResponse> GetAll();
-        FuelTypeResponse? GetById(int id);
-        FuelTypeResponse Add(FuelTypeRequest request);
-        FuelTypeResponse Update(FuelType fuel);
-        void Delete(int id);
+        Task<IEnumerable<FuelTypeResponse>> GetAllAsync();
+        Task<FuelTypeResponse?> GetByIdAsync(int id);
+        Task<FuelTypeResponse> AddAsync(FuelTypeRequest request);
+        Task<FuelTypeResponse> UpdateAsync(FuelType fuel);
+        Task DeleteAsync(int id);
     }
 }

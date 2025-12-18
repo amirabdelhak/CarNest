@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.DTOs.Requests;
 
+using System.Threading.Tasks;
+
 namespace Presentation.Controllers
 {
     [Route("api/[controller]")]
@@ -21,30 +23,30 @@ namespace Presentation.Controllers
         }
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult GetAll() => Ok(manager.GetAll());
+        public async Task<IActionResult> GetAll() => Ok(await manager.GetAllAsync());
 
         [HttpGet("{id:int}")]
         [AllowAnonymous]
-        public IActionResult GetById(int id) => Ok(manager.GetById(id));
+        public async Task<IActionResult> GetById(int id) => Ok(await manager.GetByIdAsync(id));
 
         [HttpPost]
-        public IActionResult Add(MakeRequest request)
+        public async Task<IActionResult> Add(MakeRequest request)
         {
-            var result = manager.Add(request);
+            var result = await manager.AddAsync(request);
             return CreatedAtAction(nameof(GetById), new { id = result.MakeId }, result);
         }
 
         [HttpPut]
-        public IActionResult Update(Make make)
+        public async Task<IActionResult> Update(Make make)
         {
-            var result = manager.Update(make);
+            var result = await manager.UpdateAsync(make);
             return Ok(result);
         }
 
         [HttpDelete("{id:int}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            manager.Delete(id);
+            await manager.DeleteAsync(id);
             return Ok();
         }
     }

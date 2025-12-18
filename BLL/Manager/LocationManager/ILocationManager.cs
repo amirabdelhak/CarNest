@@ -11,10 +11,10 @@ namespace BLL.Manager.LocationManager
 {
     public interface ILocationManager
     {
-        IEnumerable<LocationCityResponse> GetAll();
-        LocationCityResponse? GetById(int id);
-        LocationCityResponse Add(LocationCityRequest request);
-        LocationCityResponse Update(LocationCity location);
-        void Delete(int id);
+        Task<IEnumerable<LocationCityResponse>> GetAllAsync();
+        Task<LocationCityResponse?> GetByIdAsync(int id);
+        Task<LocationCityResponse> AddAsync(LocationCityRequest request);
+        Task<LocationCityResponse> UpdateAsync(LocationCity location);
+        Task DeleteAsync(int id);
     }
 }

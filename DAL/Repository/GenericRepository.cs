@@ -19,19 +19,23 @@ namespace DAL.Repository
         }
 
 
-        public List<Tentity>? GetAll(Func<IQueryable<Tentity>, IQueryable<Tentity>>? include = null)
+
+
+        public async Task<List<Tentity>> GetAllAsync(Func<IQueryable<Tentity>, IQueryable<Tentity>>? include = null)
         {
             IQueryable<Tentity> query = dbcontext.Set<Tentity>();
 
             if (include != null)
                 query = include(query);
 
-            return query.AsNoTracking().ToList();
+            return await query.AsNoTracking().ToListAsync();
         }
 
-        public Tentity? GetById(params object[] keys)
+
+
+        public async Task<Tentity?> GetByIdAsync(params object[] keys)
         {
-            return dbcontext.Set<Tentity>().Find(keys);
+            return await dbcontext.Set<Tentity>().FindAsync(keys);
         }
 
         public void Add(Tentity entity)
@@ -47,18 +51,22 @@ namespace DAL.Repository
             dbcontext.Set<Tentity>().Remove(entity);
         }
 
-        public int Count(Expression<Func<Tentity, bool>>? predicate = null)
+
+
+        public async Task<int> CountAsync(Expression<Func<Tentity, bool>>? predicate = null)
         {
             if (predicate == null)
             {
-                return dbcontext.Set<Tentity>().Count();
+                return await dbcontext.Set<Tentity>().CountAsync();
             }
-            return dbcontext.Set<Tentity>().Where(predicate).Count();
+            return await dbcontext.Set<Tentity>().Where(predicate).CountAsync();
         }
 
-        public bool Any(Expression<Func<Tentity, bool>> predicate)
+
+
+        public async Task<bool> AnyAsync(Expression<Func<Tentity, bool>> predicate)
         {
-            return dbcontext.Set<Tentity>().Any(predicate);
+            return await dbcontext.Set<Tentity>().AnyAsync(predicate);
         }
     }
 }

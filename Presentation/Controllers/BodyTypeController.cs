@@ -7,6 +7,8 @@ using NuGet.Configuration;
 using Presentation.DTOs.Requests;
 using Presentation.DTOs.Responses;
 
+using System.Threading.Tasks;
+
 namespace Presentation.Controllers
 {
     [Route("api/[controller]")]
@@ -23,38 +25,38 @@ namespace Presentation.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            return Ok(manager.GetAll());
+            return Ok(await manager.GetAllAsync());
         }
 
         [HttpGet("{id:int}")]
         [AllowAnonymous]
-        public IActionResult GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
-            var result = manager.GetById(id);
+            var result = await manager.GetByIdAsync(id);
             if (result == null) return NotFound();
             return Ok(result);
         }
 
         [HttpPost]
-        public IActionResult Add(BodyTypeRequest request)
+        public async Task<IActionResult> Add(BodyTypeRequest request)
         {
-            var result = manager.Add(request);
+            var result = await manager.AddAsync(request);
             return CreatedAtAction(nameof(GetById), new { id = result.BodyId }, result);
         }
 
         [HttpPut]
-        public IActionResult Update(BodyType bodyType)
+        public async Task<IActionResult> Update(BodyType bodyType)
         {
-            var result = manager.Update(bodyType);
+            var result = await manager.UpdateAsync(bodyType);
             return Ok(result);
         }
 
         [HttpDelete("{id:int}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            manager.Delete(id);
+            await manager.DeleteAsync(id);
             return Ok();
         }
     }

@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Presentation.DTOs.Requests;
 using System.Security.Claims;
 
+using System.Threading.Tasks;
+
 namespace Presentation.Controllers
 {
     [Route("api/[controller]")]
@@ -19,19 +21,19 @@ namespace Presentation.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetMyFavorites()
+        public async Task<IActionResult> GetMyFavorites()
         {
             var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return Ok(manager.GetCustomerFavorites(customerId));
+            return Ok(await manager.GetCustomerFavoritesAsync(customerId));
         }
 
         [HttpPost]
-        public IActionResult AddToFavorites(FavoriteRequest request)
+        public async Task<IActionResult> AddToFavorites(FavoriteRequest request)
         {
             var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             try
             {
-                var result = manager.AddToFavorites(customerId, request.CarId);
+                var result = await manager.AddToFavoritesAsync(customerId, request.CarId);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -41,10 +43,10 @@ namespace Presentation.Controllers
         }
 
         [HttpDelete("{carId}")]
-        public IActionResult RemoveFromFavorites(string carId)
+        public async Task<IActionResult> RemoveFromFavorites(string carId)
         {
             var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            manager.RemoveFromFavorites(customerId, carId);
+            await manager.RemoveFromFavoritesAsync(customerId, carId);
             return Ok(new { Message = "Removed from favorites" });
         }
     }

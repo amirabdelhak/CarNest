@@ -20,47 +20,46 @@ namespace BLL.Manager.ModelManager
             this.UnitOfWork = UnitOfWork;
         }
 
-        public IEnumerable<ModelResponse> GetAll()
+        public async Task<IEnumerable<ModelResponse>> GetAllAsync()
         {
-            var data = UnitOfWork.ModelRepo.GetAll();
+            var data = await UnitOfWork.ModelRepo.GetAllAsync();
             return data.Select(f => f.ToResponse());
         }
 
-        public ModelResponse? GetById(int id)
+        public async Task<ModelResponse?> GetByIdAsync(int id)
         {
-            var data = UnitOfWork.ModelRepo.GetById(id);
+            var data = await UnitOfWork.ModelRepo.GetByIdAsync(id);
             return data?.ToResponse();
         }
 
-        public IEnumerable<ModelResponse>? GetByMakeId(int makeId)
+        public async Task<IEnumerable<ModelResponse>> GetByMakeIdAsync(int makeId)
         {
-            var data = UnitOfWork.ModelRepo.GetAll()
-                .Where(m => m.MakeId == makeId);
+            var data = await UnitOfWork.ModelRepo.GetAllAsync(q => q.Where(m => m.MakeId == makeId));
             return data.Select(f => f.ToResponse());
         }
 
-        public ModelResponse Add(ModelRequest request)
+        public async Task<ModelResponse> AddAsync(ModelRequest request)
         {
             var entity = request.ToEntity();
             UnitOfWork.ModelRepo.Add(entity);
-            UnitOfWork.Save();
+            await UnitOfWork.SaveAsync();
             return entity.ToResponse();
         }
 
-        public ModelResponse Update(Model entity)
+        public async Task<ModelResponse> UpdateAsync(Model entity)
         {
             UnitOfWork.ModelRepo.Update(entity);
-            UnitOfWork.Save();
+            await UnitOfWork.SaveAsync();
             return entity.ToResponse();
         }
 
-        public void Delete(int id)
+        public async Task DeleteAsync(int id)
         {
-            var item = UnitOfWork.ModelRepo.GetById(id);
+            var item = await UnitOfWork.ModelRepo.GetByIdAsync(id);
             if (item != null)
             {
                 UnitOfWork.ModelRepo.Delete(item);
-                UnitOfWork.Save();
+                await UnitOfWork.SaveAsync();
             }
         }
     }

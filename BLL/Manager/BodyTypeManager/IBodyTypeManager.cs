@@ -11,10 +11,10 @@ namespace BLL.Manager.BodyTypeManager
 {
     public interface IBodyTypeManager
     {
-        IEnumerable<BodyTypeResponse> GetAll();
-        BodyTypeResponse? GetById(int id);
-        BodyTypeResponse Add(BodyTypeRequest request);
-        BodyTypeResponse Update(BodyType bodyType);
-        void Delete(int id);
+        Task<IEnumerable<BodyTypeResponse>> GetAllAsync();
+        Task<BodyTypeResponse?> GetByIdAsync(int id);
+        Task<BodyTypeResponse> AddAsync(BodyTypeRequest request);
+        Task<BodyTypeResponse> UpdateAsync(BodyType bodyType);
+        Task DeleteAsync(int id);
     }
 }

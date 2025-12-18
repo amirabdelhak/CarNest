@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.DTOs.Requests;
 
+using System.Threading.Tasks;
+
 namespace Presentation.Controllers
 {
     [Route("api/[controller]")]
@@ -23,35 +25,35 @@ namespace Presentation.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult GetAll() => Ok(manager.GetAll());
+        public async Task<IActionResult> GetAll() => Ok(await manager.GetAllAsync());
 
         [HttpGet("{id}")]
         [AllowAnonymous]
-        public IActionResult GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
-            var result = manager.GetById(id);
+            var result = await manager.GetByIdAsync(id);
             if (result == null) return NotFound();
             return Ok(result);
         }
 
         [HttpPost]
-        public IActionResult Add(FuelTypeRequest request)
+        public async Task<IActionResult> Add(FuelTypeRequest request)
         {
-            var result = manager.Add(request);
+            var result = await manager.AddAsync(request);
             return CreatedAtAction(nameof(GetById), new { id = result.FuelId }, result);
 
         }
         [HttpPut]
-        public IActionResult Update(FuelType fuelType)
+        public async Task<IActionResult> Update(FuelType fuelType)
         {
-            var result = manager.Update(fuelType);
+            var result = await manager.UpdateAsync(fuelType);
             return Ok(result);
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            manager.Delete(id);
+            await manager.DeleteAsync(id);
             return Ok();
         }
     }

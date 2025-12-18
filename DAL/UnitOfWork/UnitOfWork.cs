@@ -2,6 +2,7 @@
 using DAL.Entity;
 using DAL.Repository;
 using Microsoft.Extensions.DependencyInjection;
+using System.Threading.Tasks;
 
 namespace DAL.UnitOfWork
 {
@@ -57,9 +58,11 @@ namespace DAL.UnitOfWork
         public IGenericRepository<Favorite> FavoriteRepo
             => favoriteRepo ??= serviceProvider.GetRequiredService<IGenericRepository<Favorite>>();
 
-        public void Save()
+
+
+        public async Task SaveAsync()
         {
-            dbcontext.SaveChanges();
+            await dbcontext.SaveChangesAsync();
         }
     }
 }

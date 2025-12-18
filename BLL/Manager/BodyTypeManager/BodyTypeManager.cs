@@ -20,42 +20,42 @@ namespace BLL.Manager.BodyTypeManager
             this.UnitOfWork = UnitOfWork;
         }
 
-        public IEnumerable<BodyTypeResponse> GetAll()
+        public async Task<IEnumerable<BodyTypeResponse>> GetAllAsync()
         {
-            var data = UnitOfWork.BodyTypeRepo.GetAll();
+            var data = await UnitOfWork.BodyTypeRepo.GetAllAsync();
             return data.Select(b => b.ToResponse());
             // لو عايزين تجيب العربيات:
             // return unit.BodyTypeRepo.GetAll(q => q.Include(b => b.Cars));
         }
 
-        public BodyTypeResponse? GetById(int id)
+        public async Task<BodyTypeResponse?> GetByIdAsync(int id)
         {
-            var data= UnitOfWork.BodyTypeRepo.GetById(id);
-            return data.ToResponse();
+            var data = await UnitOfWork.BodyTypeRepo.GetByIdAsync(id);
+            return data?.ToResponse();
         }
 
-        public BodyTypeResponse Add(BodyTypeRequest request)
+        public async Task<BodyTypeResponse> AddAsync(BodyTypeRequest request)
         {
             var data = request.ToEntity();
             UnitOfWork.BodyTypeRepo.Add(data);
-            UnitOfWork.Save();
+            await UnitOfWork.SaveAsync();
             return data.ToResponse();
         }
 
-        public BodyTypeResponse Update(BodyType bodyType)
+        public async Task<BodyTypeResponse> UpdateAsync(BodyType bodyType)
         {
             UnitOfWork.BodyTypeRepo.Update(bodyType);
-            UnitOfWork.Save();
+            await UnitOfWork.SaveAsync();
             return bodyType.ToResponse();
         }
 
-        public void Delete(int id)
+        public async Task DeleteAsync(int id)
         {
-            var bt = UnitOfWork.BodyTypeRepo.GetById(id);
+            var bt = await UnitOfWork.BodyTypeRepo.GetByIdAsync(id);
             if (bt != null)
             {
                 UnitOfWork.BodyTypeRepo.Delete(bt);
-                UnitOfWork.Save();
+                await UnitOfWork.SaveAsync();
             }
         }
     }

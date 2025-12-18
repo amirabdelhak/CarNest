@@ -1,5 +1,6 @@
 ﻿using DAL.Entity;
 using DAL.Repository;
+using System.Threading.Tasks;
 
 namespace DAL.UnitOfWork
 {
@@ -16,6 +17,7 @@ namespace DAL.UnitOfWork
         IGenericRepository<Model> ModelRepo { get; }
         IGenericRepository<Favorite> FavoriteRepo { get; }
 
-        void Save();
+
+        Task SaveAsync();
     }
 }
