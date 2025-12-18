@@ -404,7 +404,6 @@ namespace BLL.Manager.CarManager
                 query = query.Where(c => c.ExteriorColor.ToLower() == request.ExteriorColor.ToLower());
             }
 
-
             if (!string.IsNullOrWhiteSpace(request.InteriorColor))
             {
                 query = query.Where(c => c.InteriorColor != null && c.InteriorColor.ToLower() == request.InteriorColor.ToLower());
