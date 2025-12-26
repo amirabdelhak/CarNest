@@ -12,6 +12,8 @@ using Microsoft.IdentityModel.Tokens;
 using Presentation.DTOs.Requests;
 using Presentation.DTOs.Responses;
 using Presentation.Mappings;
+using BLL.Manager.AccountManager;
+using Microsoft.EntityFrameworkCore;
 
 namespace Presentation.Controllers
 {
@@ -22,16 +24,21 @@ namespace Presentation.Controllers
         private readonly UserManager<IdentityUser> userManager;
         private readonly RoleManager<IdentityRole> roleManager;
         private readonly IConfiguration configuration;
+        private readonly IAccountManager accountManager;
 
         public AccountController(
             UserManager<IdentityUser> userManager,
             RoleManager<IdentityRole> roleManager,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IAccountManager accountManager)
         {
             this.userManager = userManager;
             this.roleManager = roleManager;
             this.configuration = configuration;
+            this.accountManager = accountManager;
         }
+
+        // ... Register methods unchanged ...
         [Authorize(Roles = "Admin")]
         [HttpPost("register/admin")]
         public async Task<IActionResult> RegisterAdmin(RegisterAdminRequest request)
@@ -52,7 +59,25 @@ namespace Presentation.Controllers
 
             await userManager.AddToRoleAsync(admin, "Admin");
 
-            return Ok(new { Message = "Admin registered successfully", UserId = admin.Id });
+            // Auto-login response
+            var token = GenerateJwtToken(admin, "Admin");
+            var expiryMinutes = int.Parse(configuration["JwtSettings:ExpiryMinutes"] ?? "60");
+
+            // Since we just created it, we can return the response directly or fetch it to be safe.
+            // Fetching ensures we get the exact same structure as Login.
+            var response = await accountManager.GetFullUserResponseAsync(admin.Id, "Admin", token, expiryMinutes);
+            
+            if (response != null) return Ok(response);
+
+            // Fallback (should not happen for newly created user)
+            return Ok(new AuthResponse
+            {
+                Token = token,
+                UserId = admin.Id,
+                Email = admin.Email,
+                Role = "Admin",
+                ExpiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes)
+            });
         }
 
         [HttpPost("register/vendor")]
@@ -74,7 +99,22 @@ namespace Presentation.Controllers
 
             await userManager.AddToRoleAsync(vendor, "Vendor");
 
-            return Ok(new { Message = "Vendor registered successfully", UserId = vendor.Id });
+            // Auto-login response
+            var token = GenerateJwtToken(vendor, "Vendor");
+            var expiryMinutes = int.Parse(configuration["JwtSettings:ExpiryMinutes"] ?? "60");
+
+            var response = await accountManager.GetFullUserResponseAsync(vendor.Id, "Vendor", token, expiryMinutes);
+            
+            if (response != null) return Ok(response);
+
+            return Ok(new AuthResponse
+            {
+                Token = token,
+                UserId = vendor.Id,
+                Email = vendor.Email,
+                Role = "Vendor",
+                ExpiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes)
+            });
         }
 
         [HttpPost("register/customer")]
@@ -96,7 +136,22 @@ namespace Presentation.Controllers
 
             await userManager.AddToRoleAsync(customer, "Customer");
 
-            return Ok(new { Message = "Customer registered successfully", UserId = customer.Id });
+            // Auto-login response
+            var token = GenerateJwtToken(customer, "Customer");
+            var expiryMinutes = int.Parse(configuration["JwtSettings:ExpiryMinutes"] ?? "60");
+
+            var response = await accountManager.GetFullUserResponseAsync(customer.Id, "Customer", token, expiryMinutes);
+            
+            if (response != null) return Ok(response);
+
+            return Ok(new AuthResponse
+            {
+                Token = token,
+                UserId = customer.Id,
+                Email = customer.Email,
+                Role = "Customer",
+                ExpiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes)
+            });
         }
 
         [HttpPost("login")]
@@ -114,6 +169,12 @@ namespace Presentation.Controllers
             var token = GenerateJwtToken(user, role);
             var expiryMinutes = int.Parse(configuration["JwtSettings:ExpiryMinutes"] ?? "60");
 
+            var response = await accountManager.GetFullUserResponseAsync(user.Id, role, token, expiryMinutes);
+            if (response != null)
+            {
+                return Ok(response);
+            }
+
             return Ok(new AuthResponse
             {
                 Token = token,
@@ -122,6 +183,47 @@ namespace Presentation.Controllers
                 Role = role,
                 ExpiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes)
             });
+
+        }
+
+        [Authorize]
+        [HttpPut("profile")]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var role = User.FindFirstValue(ClaimTypes.Role);
+
+            if (userId == null || role == null)
+            {
+                return Unauthorized();
+            }
+
+            var error = await accountManager.UpdateProfileAsync(userId, role, request);
+            if (error != null)
+            {
+                return BadRequest(new { Message = error });
+            }
+
+            return Ok(new { Message = "Profile updated successfully" });
+        }
+
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
+            var error = await accountManager.ChangePasswordAsync(userId, request);
+            if (error != null)
+            {
+                return BadRequest(new { Message = error });
+            }
+
+            return Ok(new { Message = "Password changed successfully" });
         }
 
         private string GenerateJwtToken(IdentityUser user, string role)
@@ -131,7 +233,7 @@ namespace Presentation.Controllers
 
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(ClaimTypes.Role, role),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())

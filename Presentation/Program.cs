@@ -1,4 +1,5 @@
 using System.Text;
+using BLL.Manager.AccountManager;
 using BLL.Manager.BodyTypeManager;
 using BLL.Manager.CarManager;
 using BLL.Manager.FavoriteManager;
@@ -65,7 +66,10 @@ namespace Presentation
                 options.UseSqlServer(builder.Configuration.GetConnectionString("MostafaDB")));
 
 
-            builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+            builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+            {
+                options.User.RequireUniqueEmail = true;
+            })
                 .AddEntityFrameworkStores<CarNestDBContext>()
                 .AddDefaultTokenProviders();
 
@@ -80,6 +84,7 @@ namespace Presentation
             })
             .AddJwtBearer(options =>
             {
+                options.MapInboundClaims = false; // Disable automatic claim mapping
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
@@ -112,6 +117,7 @@ namespace Presentation
             builder.Services.AddScoped<IBodyTypeManager, BodyTypeManager>();
             builder.Services.AddScoped<ILocationManager, LocationManager>();
             builder.Services.AddScoped<IFuelTypeManager, FuelTypeManager>();
+            builder.Services.AddScoped<IAccountManager, AccountManager>();
             builder.Services.AddScoped<ICarManager>(sp =>
             {
                 var unitOfWork = sp.GetRequiredService<IUnitOfWork>();

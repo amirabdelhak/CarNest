@@ -9,8 +9,8 @@ namespace DAL.Entity
     [Table("Admins")]
     public class Admin : IdentityUser
     {
-        [Required, MaxLength(128)]
-        public string FirstName { get; set; } = null!;
+        [MaxLength(128)]
+        public string? FirstName { get; set; }
 
         [MaxLength(128)]
         public string? LastName { get; set; }
@@ -18,9 +18,8 @@ namespace DAL.Entity
         [MaxLength(512)]
         public string? Address { get; set; }
 
-        [Required]
         [RegularExpression(@"^\d{14}$", ErrorMessage = "National ID must be exactly 14 digits")]
-        public string NationalId { get; set; }
+        public string? NationalId { get; set; }
 
         [Required]
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
