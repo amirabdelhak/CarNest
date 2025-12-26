@@ -12,3 +12,19 @@
 # AppSettings
 **/appsettings.json
 **/appsettings.*.json
+# Web projects
+.vs/
+*.config
+*.json
+
+# Package Manager
+*.nupkg
+**/packages/
+
+# Azure Stream Analytics
+/DataLakeStore/
+/LocalRunOutputs/
+
+# Azure .NET Core
+/publish/
+/.gitignore

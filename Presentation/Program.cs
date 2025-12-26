@@ -62,7 +62,7 @@ namespace Presentation
 
             //remeber to change the DBConnection FIRST//////////////////////////////////////////////////////////
             builder.Services.AddDbContext<CarNestDBContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DeployDB")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("MostafaDB")));
 
 
             builder.Services.AddIdentity<IdentityUser, IdentityRole>()
