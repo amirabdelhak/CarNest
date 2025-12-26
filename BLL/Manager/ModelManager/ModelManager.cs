@@ -46,8 +46,15 @@ namespace BLL.Manager.ModelManager
             return entity.ToResponse();
         }
 
-        public async Task<ModelResponse> UpdateAsync(Model entity)
+        public async Task<ModelResponse?> UpdateAsync(int id, ModelRequest request)
         {
+            var entity = await UnitOfWork.ModelRepo.GetByIdAsync(id);
+            if (entity == null)
+                return null;
+
+            entity.ModelName = request.ModelName;
+            entity.MakeId = request.MakeId;
+
             UnitOfWork.ModelRepo.Update(entity);
             await UnitOfWork.SaveAsync();
             return entity.ToResponse();

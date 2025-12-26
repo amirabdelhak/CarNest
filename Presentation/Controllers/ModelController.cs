@@ -1,11 +1,10 @@
-﻿using BLL.Manager.ModelManager;
+﻿using System.Threading.Tasks;
+using BLL.Manager.ModelManager;
 using DAL.Entity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.DTOs.Requests;
-
-using System.Threading.Tasks;
 
 namespace Presentation.Controllers
 {
@@ -41,10 +40,12 @@ namespace Presentation.Controllers
             return CreatedAtAction(nameof(GetById), new { id = result.ModelId }, result);
         }
 
-        [HttpPut]
-        public async Task<IActionResult> Update(Model model)
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Update(int id, [FromBody] ModelRequest request)
         {
-            var result = await manager.UpdateAsync(model);
+            var result = await manager.UpdateAsync(id, request);
+            if (result == null)
+                return NotFound();
             return Ok(result);
         }
 
@@ -52,7 +53,7 @@ namespace Presentation.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             await manager.DeleteAsync(id);
-            return Ok();
+            return NoContent();
         }
     }
 }

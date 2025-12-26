@@ -15,7 +15,7 @@ namespace BLL.Manager.ModelManager
         Task<ModelResponse?> GetByIdAsync(int id);
         Task<IEnumerable<ModelResponse>> GetByMakeIdAsync(int MakeId);
         Task<ModelResponse> AddAsync(ModelRequest request);
-        Task<ModelResponse> UpdateAsync(Model model);
+        Task<ModelResponse?> UpdateAsync(int id, ModelRequest request);
         Task DeleteAsync(int id);
     }
 }
