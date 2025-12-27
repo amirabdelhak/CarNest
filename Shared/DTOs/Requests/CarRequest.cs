@@ -10,7 +10,7 @@ namespace Presentation.DTOs.Requests
         public int Year { get; set; }
 
         [Required(ErrorMessage = "Price is required")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
+        [Range(10000, double.MaxValue, ErrorMessage = "Price must be greater than 10,000")]
         public decimal Price { get; set; }
 
         [MaxLength(2048, ErrorMessage = "Description cannot exceed 2048 characters")]
@@ -33,7 +33,6 @@ namespace Presentation.DTOs.Requests
 
         [Range(0, int.MaxValue, ErrorMessage = "Mileage cannot be negative")]
         public int? Mileage { get; set; }
-
         public DateTime? LastInspectionDate { get; set; }
 
 
@@ -58,5 +57,6 @@ namespace Presentation.DTOs.Requests
 
         [Required(ErrorMessage = "Drivetrain type is required")]
         public DrivetrainType DrivetrainType { get; set; } = DrivetrainType.FWD;
+
     }
 }

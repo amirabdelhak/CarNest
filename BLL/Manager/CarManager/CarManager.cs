@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Text.Json;
+using System.Threading.Tasks;
 using DAL.Entity;
 using DAL.UnitOfWork;
 using Microsoft.AspNetCore.Http;
@@ -66,7 +66,7 @@ namespace BLL.Manager.CarManager
                  .Include(c => c.FuelType)
                  .Include(c => c.LocationCity)
             );
-            
+
             var query = dataList.AsQueryable();
 
             // Apply filters
@@ -100,7 +100,7 @@ namespace BLL.Manager.CarManager
                      .Include(c => c.Admin)
                      .Include(c => c.Vendor)
             );
-            
+
             var data = dataList.FirstOrDefault();
 
             return data?.ToDetailResponse();
@@ -156,7 +156,7 @@ namespace BLL.Manager.CarManager
                      .Include(c => c.FuelType)
                      .Include(c => c.LocationCity)
             );
-            
+
             var reloadedEntity = reloadedList.FirstOrDefault();
 
             return reloadedEntity?.ToResponse() ?? entity.ToResponse();
@@ -257,7 +257,7 @@ namespace BLL.Manager.CarManager
                      .Include(c => c.FuelType)
                      .Include(c => c.LocationCity)
             );
-            
+
             var reloadedEntity = reloadedList.FirstOrDefault();
 
             return reloadedEntity?.ToResponse() ?? existingCar.ToResponse();
@@ -299,9 +299,10 @@ namespace BLL.Manager.CarManager
         private void ValidateConditionRules(CarRequest request)
         {
             // Used cars must have mileage
-            if (request.Condition == CarCondition.Used && !request.Mileage.HasValue)
+            if (request.Condition == CarCondition.Used && request.Mileage.HasValue)
             {
-                throw new ArgumentException("Mileage is required for used cars");
+                if (request.Mileage.Value == 0)
+                    throw new ArgumentException("Mileage is required for used cars");
             }
 
             // New cars should not have mileage (or should be 0)
@@ -311,9 +312,10 @@ namespace BLL.Manager.CarManager
             }
 
             // Inspection date cannot be in the future
-            if (request.LastInspectionDate.HasValue && request.LastInspectionDate.Value > DateTime.UtcNow)
+            if (request.LastInspectionDate.HasValue && (request.LastInspectionDate.Value > DateTime.UtcNow
+                || request.LastInspectionDate.Value.Year < request.Year))
             {
-                throw new ArgumentException("Last inspection date cannot be in the future");
+                throw new ArgumentException("Last inspection date cannot be in the future or prior its release year.");
             }
         }
 

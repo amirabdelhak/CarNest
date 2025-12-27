@@ -16,7 +16,7 @@ namespace DAL.Entity
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
+        [Range(10.000, double.MaxValue, ErrorMessage = "Price must be greater than 10,000")]
         public decimal Price { get; set; }
 
         [MaxLength(2048)]
