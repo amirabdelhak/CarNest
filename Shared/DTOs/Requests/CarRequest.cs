@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using DAL.Entity;
+using Microsoft.AspNetCore.Http;
 
 namespace Presentation.DTOs.Requests
 {
@@ -58,5 +59,7 @@ namespace Presentation.DTOs.Requests
         [Required(ErrorMessage = "Drivetrain type is required")]
         public DrivetrainType DrivetrainType { get; set; } = DrivetrainType.FWD;
 
+        public IFormFileCollection? Images { get; set; }
+        public IFormFile? LicenseImage { get; set; }
     }
 }

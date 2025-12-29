@@ -1,29 +1,49 @@
-# Cleanup Synchronous Repository Methods
+# Implementation Plan - Car Approval System
 
 ## Goal Description
-Remove unused synchronous methods from the Data Access Layer to enforce usage of Asynchronous patterns and clean up the codebase.
+Implement a moderation system where cars posted by Vendors must be approved by an Admin before they appear on the public feed. Admin posts are auto-approved.
 
 ## User Review Required
 > [!IMPORTANT]
-> The following synchronous methods will be removed: `GetAll`, `GetById`, `Count`, `Any`, and `Save`. Verify that no other part of the application (e.g., legacy services or background jobs not in BLL) relies on them.
+> This change requires a database migration to add the `Status` column to the `Cars` table.
 
 ## Proposed Changes
-### DAL Layer
-#### [MODIFY] [IGenericRepository.cs](file:///d:/projects/CarNest/DAL/Repository/IGenericRepository.cs)
-- Remove `GetAll()`, `GetById()`, `Count()`, `Any()` synchronous definitions.
-- Keep `Add()`, `Update()`, `Delete()` as they are in-memory context operations.
 
-#### [MODIFY] [GenericRepository.cs](file:///d:/projects/CarNest/DAL/Repository/GenericRepository.cs)
-- Remove implementations of `GetAll()`, `GetById()`, `Count()`, `Any()`.
+### Data Layer
+#### [MODIFY] [Car.cs](file:///d:/projects/CarNest/DAL/Entity/Car.cs)
+- Add `public CarStatus Status { get; set; }` property.
+- Default value should be `Pending` (or handled in logic).
 
-#### [MODIFY] [IUnitOfWork.cs](file:///d:/projects/CarNest/DAL/UnitOfWork/IUnitOfWork.cs)
-- Remove `Save()` synchronous definition.
+#### [NEW] [CarStatus.cs](file:///d:/projects/CarNest/DAL/Enums/CarStatus.cs)
+- Enum with values: `Pending`, `Approved`, `Rejected`.
 
-#### [MODIFY] [UnitOfWork.cs](file:///d:/projects/CarNest/DAL/UnitOfWork/UnitOfWork.cs)
-- Remove `Save()` implementation.
+### Business Logic
+#### [MODIFY] [CarManager.cs](file:///d:/projects/CarNest/BLL/Manager/CarManager/CarManager.cs)
+- `AddAsync`:
+    - If `UserRole` is `Vendor`, set `Status = Pending`.
+    - If `UserRole` is `Admin`, set `Status = Approved`.
+- `GetAllAsync`:
+    - Filter query to only include `Status == Approved`.
+- `GetPendingCarsAsync` (New Method):
+    - Returns cars where `Status == Pending`.
+- `UpdateStatusAsync` (New Method):
+    - Allows Admin to set status to `Approved` or `Rejected`.
+
+### API Layer
+#### [MODIFY] [CarController.cs](file:///d:/projects/CarNest/Presentation/Controllers/CarController.cs)
+- `Add`: Logic is handled in Manager, but verify roles are passed correctly.
+- `GetPending` (New Endpoint):
+    - `[HttpGet("pending")]`
+    - `[Authorize(Roles = "Admin")]`
+- `UpdateStatus` (New Endpoint):
+    - `[HttpPut("{id}/status")]`
+    - `[Authorize(Roles = "Admin")]`
 
 ## Verification Plan
-### Automated Tests
-- Run `dotnet build` to ensure no compilation errors (verifying no remaining usages).
+
 ### Manual Verification
-- None required beyond compilation check as this is a cleanup task.
+1.  **Vendor Post**: Log in as Vendor, post a car. Verify it does not appear in the main list.
+2.  **Admin Check**: Log in as Admin. Verify the new car appears in the "Pending" list.
+3.  **Approval**: Admin approves the car.
+4.  **Public Check**: Verify the car now appears in the main list.
+5.  **Rejection**: Create another car, reject it, ensure it stays hidden.

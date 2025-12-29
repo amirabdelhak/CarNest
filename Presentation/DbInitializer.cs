@@ -209,6 +209,8 @@ namespace Presentation
                         Mileage = null,
                         LastInspectionDate = null,
                         GearType = GearType.Automatic,
+                        Status = CarStatus.Approved,
+                        CarLicenseUrl = "images/licenses/placeholder.jpg",
 
                         // specs
                         ExteriorColor = "White",
@@ -240,6 +242,8 @@ namespace Presentation
                         Mileage = 45000,
                         LastInspectionDate = null,
                         GearType = GearType.Manual,
+                        Status = CarStatus.Approved,
+                        CarLicenseUrl = "images/licenses/placeholder.jpg",
 
                         // specs
                         ExteriorColor = "Black",
@@ -271,6 +275,8 @@ namespace Presentation
                         Mileage = 25000,
                         LastInspectionDate = DateTime.UtcNow.AddDays(-30),
                         GearType = GearType.Automatic,
+                        Status = CarStatus.Approved,
+                        CarLicenseUrl = "images/licenses/placeholder.jpg",
 
                         // specs
                         ExteriorColor = "Blue",
@@ -302,6 +308,8 @@ namespace Presentation
                         Mileage = 78000,
                         LastInspectionDate = null,
                         GearType = GearType.Manual,
+                        Status = CarStatus.Approved,
+                        CarLicenseUrl = "images/licenses/placeholder.jpg",
 
                         // specs
                         ExteriorColor = "Silver",

@@ -1,0 +1,42 @@
+# Car Approval System
+
+- [x] Planning and Design
+    - [x] Create implementation plan <!-- id: 0 -->
+    - [x] Review plan with user <!-- id: 1 -->
+- [x] Database Changes
+    - [x] Add `CarStatus` Enum `(Pending, Approved, Rejected)` <!-- id: 2 -->
+    - [x] Add `Status` property to `Car` entity <!-- id: 3 -->
+    - [x] Create and apply EF Core Migration <!-- id: 4 -->
+- [x] Business Logic Implementation
+    - [x] Update `CarManager.AddAsync` to set default status <!-- id: 5 -->
+    - [x] Update `CarManager.GetAllAsync` to filter approved cars <!-- id: 6 -->
+    - [x] Create `CarManager.GetPendingCarsAsync` <!-- id: 7 -->
+    - [x] Create `CarManager.UpdateCarStatusAsync` <!-- id: 8 -->
+    - [x] Refine Rejection Logic (Delete on Reject) <!-- id: 16 -->
+- [x] API Implementation
+    - [x] Update `CarController.GetAll` to support status filtering (internal) <!-- id: 9 -->
+    - [x] Add `GET /api/car/pending` endpoint <!-- id: 10 -->
+    - [x] Add `PUT /api/car/{id}/status` endpoint <!-- id: 11 -->
+- [x] Verification
+    - [x] Verify database schema update <!-- id: 12 -->
+    - [x] Test vendor posting (should be pending) <!-- id: 13 -->
+    - [x] Test public feed (should not show pending) <!-- id: 14 -->
+    - [x] Test admin approval/rejection flow <!-- id: 15 -->
+
+# Car License Image Feature
+- [x] Planning and Design
+    - [x] Inspect existing DTOs <!-- id: 17 -->
+- [x] Database Changes
+    - [x] Add `CarLicenseUrl` to `Car` entity <!-- id: 18 -->
+    - [x] Add EF Core Migration <!-- id: 19 -->
+- [x] DTO Updates
+    - [x] Update `CarRequest` to include `CarLicenseImage` (Moved to Controller Param) <!-- id: 20 -->
+    - [x] Update `CarResponse` / `CarDetailResponse` to include `CarLicenseUrl` <!-- id: 21 -->
+    - [x] Include `Status` in Responses <!-- id: 27 -->
+- [x] Logic Implementation
+    - [x] Update `CarManager.AddAsync` to handle license upload <!-- id: 22 -->
+    - [x] Update `CarManager.UpdateAsync` to handle license update <!-- id: 23 -->
+    - [x] Update `CarManager.DeleteAsync` to delete license image <!-- id: 24 -->
+- [x] API Updates
+    - [x] Update `CarController` signatures <!-- id: 25 -->
+    - [x] Secure `CarLicenseUrl` visibility <!-- id: 26 -->

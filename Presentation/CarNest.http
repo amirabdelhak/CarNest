@@ -1,6 +1,149 @@
 @CarNest_HostAddress = http://localhost:5169
+@AdminToken = REPLACE_WITH_ADMIN_TOKEN
+@VendorToken = REPLACE_WITH_VENDOR_TOKEN
 
-GET {{CarNest_HostAddress}}/weatherforecast/
+### Register Admin
+POST {{CarNest_HostAddress}}/api/Auth/register/admin
+Content-Type: application/json
+
+{
+  "firstName": "Admin",
+  "lastName": "User",
+  "username": "admin1",
+  "email": "admin1@example.com",
+  "password": "Password123!",
+  "phoneNumber": "1234567890"
+}
+
+### Login Admin
+# @name loginAdmin
+POST {{CarNest_HostAddress}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "email": "admin1@example.com",
+  "password": "Password123!"
+}
+
+### Register Vendor
+POST {{CarNest_HostAddress}}/api/Auth/register/vendor
+Content-Type: application/json
+
+{
+  "firstName": "Vendor",
+  "lastName": "User",
+  "username": "vendor1",
+  "email": "vendor1@example.com",
+  "password": "Password123!",
+  "phoneNumber": "0987654321",
+  "address": "123 Vendor St",
+  "companyName": "Best Cars Co"
+}
+
+### Login Vendor
+# @name loginVendor
+POST {{CarNest_HostAddress}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "email": "vendor1@example.com",
+  "password": "Password123!"
+}
+
+### Get All Cars (Public)
+GET {{CarNest_HostAddress}}/api/Car?pageNumber=1&pageSize=10
 Accept: application/json
 
-###
+### Get Pending Cars (Admin Only)
+GET {{CarNest_HostAddress}}/api/Car/pending
+Authorization: Bearer {{AdminToken}}
+
+### Get Car By ID
+@carId = CAR_ID_HERE
+GET {{CarNest_HostAddress}}/api/Car/{{carId}}
+Authorization: Bearer {{AdminToken}}
+
+### Add Car (Vendor - Multipart)
+POST {{CarNest_HostAddress}}/api/Car
+Authorization: Bearer {{VendorToken}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="Year"
+
+2024
+--boundary
+Content-Disposition: form-data; name="Price"
+
+50000
+--boundary
+Content-Disposition: form-data; name="Description"
+
+Brand new luxury car specs.
+--boundary
+Content-Disposition: form-data; name="ModelId"
+
+1
+--boundary
+Content-Disposition: form-data; name="BodyTypeId"
+
+1
+--boundary
+Content-Disposition: form-data; name="FuelId"
+
+1
+--boundary
+Content-Disposition: form-data; name="LocId"
+
+1
+--boundary
+Content-Disposition: form-data; name="Condition"
+
+New
+--boundary
+Content-Disposition: form-data; name="Mileage"
+
+0
+--boundary
+Content-Disposition: form-data; name="GearType"
+
+Automatic
+--boundary
+Content-Disposition: form-data; name="ExteriorColor"
+
+Red
+--boundary
+Content-Disposition: form-data; name="InteriorColor"
+
+Black
+--boundary
+Content-Disposition: form-data; name="EngineCapacity"
+
+2.0
+--boundary
+Content-Disposition: form-data; name="Horsepower"
+
+250
+--boundary
+Content-Disposition: form-data; name="DrivetrainType"
+
+AWD
+--boundary
+Content-Disposition: form-data; name="Images"; filename="car1.jpg"
+Content-Type: image/jpeg
+
+< ./car1.jpg
+--boundary
+Content-Disposition: form-data; name="LicenseImage"; filename="license.jpg"
+Content-Type: image/jpeg
+
+< ./license.jpg
+--boundary--
+
+### Update Car Status (Admin Only)
+PUT {{CarNest_HostAddress}}/api/Car/{{carId}}/status?status=Approved
+Authorization: Bearer {{AdminToken}}
+
+### Delete Car
+DELETE {{CarNest_HostAddress}}/api/Car/{{carId}}
+Authorization: Bearer {{AdminToken}}

@@ -28,7 +28,8 @@ namespace BLL.Manager.CarManager
         {
             // Start with base query including all necessary relationships
             var dataList = await UnitOfWork.CarRepo.GetAllAsync(q =>
-                q.Include(c => c.Model).ThenInclude(m => m.Make)
+                q.Where(c => c.Status == CarStatus.Approved)
+                 .Include(c => c.Model).ThenInclude(m => m.Make)
                  .Include(c => c.BodyType)
                  .Include(c => c.FuelType)
                  .Include(c => c.LocationCity)
@@ -49,7 +50,12 @@ namespace BLL.Manager.CarManager
                 .ToList();
 
             return new PagedResponse<CarResponse>(
-                data.Select(c => c.ToResponse()),
+                data.Select(c => 
+                {
+                    var r = c.ToResponse();
+                    r.CarLicenseUrl = null;
+                    return r;
+                }),
                 request.PageNumber,
                 request.PageSize,
                 count
@@ -106,10 +112,16 @@ namespace BLL.Manager.CarManager
             return data?.ToDetailResponse();
         }
 
-        public async Task<CarResponse> AddAsync(CarRequest request, string? adminId, string? vendorId, IFormFileCollection? images)
+        public async Task<CarResponse> AddAsync(CarRequest request, string? adminId, string? vendorId, IFormFileCollection? images, IFormFile? licenseImage)
         {
             // Validate condition-specific rules
             ValidateConditionRules(request);
+
+            // Ensure LicenseImage is provided (especially for vendors)
+            if (licenseImage == null)
+            {
+                throw new ArgumentException("Car license image (paper image) is required");
+            }
 
             // Validate ModelId exists
             var model = await UnitOfWork.ModelRepo.GetByIdAsync(request.ModelId);
@@ -138,11 +150,30 @@ namespace BLL.Manager.CarManager
 
             var entity = request.ToEntity(adminId, vendorId);
 
+            // Set Status based on role
+            if (!string.IsNullOrEmpty(adminId))
+            {
+                entity.Status = CarStatus.Approved;
+            }
+            else
+            {
+                entity.Status = CarStatus.Pending;
+            }
+
             // Save images if provided
             if (images != null && images.Count > 0)
             {
                 var imageUrls = SaveImages(images);
                 entity.ImageUrls = JsonSerializer.Serialize(imageUrls);
+            }
+
+            // Save license image if provided
+            if (licenseImage != null)
+            {
+                if (ValidateImageFile(licenseImage))
+                {
+                    entity.CarLicenseUrl = SaveImage(licenseImage, "licenses");
+                }
             }
 
             UnitOfWork.CarRepo.Add(entity);
@@ -162,7 +193,7 @@ namespace BLL.Manager.CarManager
             return reloadedEntity?.ToResponse() ?? entity.ToResponse();
         }
 
-        public async Task<CarResponse> UpdateAsync(string id, CarRequest request, string userId, string userRole, IFormFileCollection? newImages, List<string>? imagesToDelete)
+        public async Task<CarResponse> UpdateAsync(string id, CarRequest request, string userId, string userRole, IFormFileCollection? newImages, List<string>? imagesToDelete, IFormFile? licenseImage)
         {
             var existingCar = await UnitOfWork.CarRepo.GetByIdAsync(id);
             if (existingCar == null)
@@ -246,6 +277,27 @@ namespace BLL.Manager.CarManager
                 ? JsonSerializer.Serialize(currentImages)
                 : null;
 
+            // Handle license image update
+            if (licenseImage != null)
+            {
+                 // Delete old license image if exists
+                if (!string.IsNullOrEmpty(existingCar.CarLicenseUrl))
+                {
+                    DeleteImage(existingCar.CarLicenseUrl);
+                }
+
+                if (ValidateImageFile(licenseImage))
+                {
+                    existingCar.CarLicenseUrl = SaveImage(licenseImage, "licenses");
+                }
+            }
+
+            // If vendor updates, reset status to Pending
+            if (userRole == "Vendor")
+            {
+                existingCar.Status = CarStatus.Pending;
+            }
+
             UnitOfWork.CarRepo.Update(existingCar);
             await UnitOfWork.SaveAsync();
 
@@ -287,11 +339,144 @@ namespace BLL.Manager.CarManager
                 }
             }
 
+            // Delete license image
+            if (!string.IsNullOrEmpty(item.CarLicenseUrl))
+            {
+                DeleteImage(item.CarLicenseUrl);
+            }
+
             UnitOfWork.CarRepo.Delete(item);
             await UnitOfWork.SaveAsync();
         }
 
+        public async Task<PagedResponse<CarResponse>> GetPendingCarsAsync(PaginationRequest request)
+        {
+             var dataList = await UnitOfWork.CarRepo.GetAllAsync(q =>
+                q.Where(c => c.Status == CarStatus.Pending)
+                 .Include(c => c.Model).ThenInclude(m => m.Make)
+                 .Include(c => c.BodyType)
+                 .Include(c => c.FuelType)
+                 .Include(c => c.LocationCity)
+            );
+
+            var query = dataList.AsQueryable();
+
+            // Apply filters (Search mostly)
+             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+            {
+                var term = request.SearchTerm.Trim().ToLower();
+                query = query.Where(c =>
+                    c.Model.Make.MakeName.ToLower().Contains(term) ||
+                    c.Model.ModelName.ToLower().Contains(term) ||
+                    (c.Description != null && c.Description.ToLower().Contains(term))
+                );
+            }
+
+            var count = query.Count();
+
+            var data = query
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToList();
+
+            return new PagedResponse<CarResponse>(
+                data.Select(c => c.ToResponse()),
+                request.PageNumber,
+                request.PageSize,
+                count
+            );
+        }
+
+        public async Task<PagedResponse<CarResponse>> GetRejectedCarsAsync(PaginationRequest request)
+        {
+            var dataList = await UnitOfWork.CarRepo.GetAllAsync(q =>
+               q.Where(c => c.Status == CarStatus.Rejected)
+                .Include(c => c.Model).ThenInclude(m => m.Make)
+                .Include(c => c.BodyType)
+                .Include(c => c.FuelType)
+                .Include(c => c.LocationCity)
+           );
+
+            var query = dataList.AsQueryable();
+
+            // Apply filters (Search mostly)
+            if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+            {
+                var term = request.SearchTerm.Trim().ToLower();
+                query = query.Where(c =>
+                    c.Model.Make.MakeName.ToLower().Contains(term) ||
+                    c.Model.ModelName.ToLower().Contains(term) ||
+                    (c.Description != null && c.Description.ToLower().Contains(term))
+                );
+            }
+
+            var count = query.Count();
+
+            var data = query
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToList();
+
+            return new PagedResponse<CarResponse>(
+                data.Select(c => c.ToResponse()),
+                request.PageNumber,
+                request.PageSize,
+                count
+            );
+        }
+
+        public async Task UpdateStatusAsync(string id, CarStatus status)
+        {
+            var car = await UnitOfWork.CarRepo.GetByIdAsync(id);
+            if (car == null) throw new Exception("Car not found");
+            
+            car.Status = status;
+            UnitOfWork.CarRepo.Update(car);
+
+            await UnitOfWork.SaveAsync();
+        }
+
         #region Private Helper Methods
+
+        private string SaveImage(IFormFile image, string folderName)
+        {
+             var uploadsFolder = Path.Combine(webRootPath, "images", folderName);
+
+            // Create directory if it doesn't exist
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            // Generate unique filename
+            var fileExtension = Path.GetExtension(image.FileName);
+            var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            // Save file
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                image.CopyTo(fileStream);
+            }
+
+            return $"images/{folderName}/{uniqueFileName}";
+        }
+
+        private void DeleteImage(string imageUrl)
+        {
+             try
+            {
+                var filePath = Path.Combine(webRootPath, imageUrl.Replace("/", "\\"));
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting image {imageUrl}: {ex.Message}");
+            }
+        }
 
         /// <summary>
         /// Validates condition-specific business rules

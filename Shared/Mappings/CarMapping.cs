@@ -34,7 +34,9 @@ namespace Presentation.Mappings
                 InteriorColor = e.InteriorColor,
                 EngineCapacity = e.EngineCapacity,
                 Horsepower = e.Horsepower,
-                DrivetrainType = e.DrivetrainType
+                DrivetrainType = e.DrivetrainType,
+                Status = e.Status,
+                CarLicenseUrl = e.CarLicenseUrl
             };
 
         public static CarDetailResponse ToDetailResponse(this Car e) =>
@@ -61,6 +63,7 @@ namespace Presentation.Mappings
                 PublisherName = e.Admin != null ? $"{e.Admin.FirstName} {e.Admin.LastName}" : (e.Vendor != null ? $"{e.Vendor.FirstName} {e.Vendor.LastName}" : null),
                 PublisherPhone = e.Admin != null ? e.Admin.PhoneNumber : (e.Vendor != null ? e.Vendor.PhoneNumber : null),
                 PublisherEmail = e.Admin != null ? e.Admin.Email : (e.Vendor != null ? e.Vendor.Email : null),
+                OwnerId = e.VendorId ?? e.AdminId,
                 Condition = e.Condition,
                 Mileage = e.Mileage,
                 LastInspectionDate = e.LastInspectionDate,
@@ -70,7 +73,9 @@ namespace Presentation.Mappings
                 InteriorColor = e.InteriorColor,
                 EngineCapacity = e.EngineCapacity,
                 Horsepower = e.Horsepower,
-                DrivetrainType = e.DrivetrainType
+                DrivetrainType = e.DrivetrainType,
+                Status = e.Status,
+                CarLicenseUrl = e.CarLicenseUrl
             };
 
         public static Car ToEntity(this CarRequest r, string? adminId, string? vendorId) =>

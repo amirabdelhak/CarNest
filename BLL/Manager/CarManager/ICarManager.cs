@@ -12,8 +12,11 @@ namespace BLL.Manager.CarManager
         Task<PagedResponse<CarResponse>> GetAllAsync(PaginationRequest request);
         Task<PagedResponse<CarResponse>> GetCarsByVendorAsync(PaginationRequest request, string vendorId);
         Task<CarDetailResponse?> GetByIdAsync(string id);
-        Task<CarResponse> AddAsync(CarRequest request, string? adminId, string? vendorId, IFormFileCollection? images);
-        Task<CarResponse> UpdateAsync(string id, CarRequest request, string userId, string userRole, IFormFileCollection? newImages, List<string>? imagesToDelete);
+        Task<CarResponse> AddAsync(CarRequest request, string? adminId, string? vendorId, IFormFileCollection? images, IFormFile? licenseImage);
+        Task<CarResponse> UpdateAsync(string id, CarRequest request, string userId, string userRole, IFormFileCollection? newImages, List<string>? imagesToDelete, IFormFile? licenseImage);
         Task DeleteAsync(string id, string userId, string userRole);
+        Task<PagedResponse<CarResponse>> GetPendingCarsAsync(PaginationRequest request);
+        Task<PagedResponse<CarResponse>> GetRejectedCarsAsync(PaginationRequest request);
+        Task UpdateStatusAsync(string id, CarStatus status);
     }
 }

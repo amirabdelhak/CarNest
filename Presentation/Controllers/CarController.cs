@@ -45,6 +45,16 @@ namespace Presentation.Controllers
         {
             var result = await manager.GetByIdAsync(id);
             if (result == null) return NotFound(new { Message = "Car not found" });
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userRole = User.FindFirstValue(ClaimTypes.Role);
+
+            // Hide license URL if not Admin and not Owner
+            if (userRole != "Admin" && result.OwnerId != userId)
+            {
+                result.CarLicenseUrl = null;
+            }
+
             return Ok(result);
         }
 
@@ -53,7 +63,7 @@ namespace Presentation.Controllers
         /// </summary>
         [HttpPost]
         [Authorize(Roles = "Admin,Vendor")]
-        public async Task<IActionResult> Add([FromForm] CarRequest request, [FromForm] IFormFileCollection? images)
+        public async Task<IActionResult> Add([FromForm] CarRequest request)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userRole = User.FindFirstValue(ClaimTypes.Role);
@@ -69,7 +79,7 @@ namespace Presentation.Controllers
                 string? adminId = userRole == "Admin" ? userId : null;
                 string? vendorId = userRole == "Vendor" ? userId : null;
 
-                var result = await manager.AddAsync(request, adminId, vendorId, images);
+                var result = await manager.AddAsync(request, adminId, vendorId, request.Images, request.LicenseImage);
                 return CreatedAtAction(nameof(GetById), new { id = result.CarId }, result);
             }
             catch (Exception ex)
@@ -87,7 +97,6 @@ namespace Presentation.Controllers
         public async Task<IActionResult> Update(
             string id,
             [FromForm] CarRequest request,
-            [FromForm] IFormFileCollection? newImages,
             [FromForm] string? imagesToDeleteJson)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -109,7 +118,7 @@ namespace Presentation.Controllers
                     }
                 }
 
-                var result = await manager.UpdateAsync(id, request, userId, userRole, newImages, imagesToDelete);
+                var result = await manager.UpdateAsync(id, request, userId, userRole, request.Images, imagesToDelete, request.LicenseImage);
                 return Ok(result);
             }
             catch (UnauthorizedAccessException ex)
@@ -140,6 +149,34 @@ namespace Presentation.Controllers
             catch (UnauthorizedAccessException ex)
             {
                 return StatusCode(403, new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+        }
+        [HttpGet("pending")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetPending([FromQuery] PaginationRequest request)
+        {
+            return Ok(await manager.GetPendingCarsAsync(request));
+        }
+
+        [HttpGet("rejected")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetRejected([FromQuery] PaginationRequest request)
+        {
+            return Ok(await manager.GetRejectedCarsAsync(request));
+        }
+
+        [HttpPut("{id}/status")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateStatus(string id, [FromQuery] DAL.Entity.CarStatus status)
+        {
+            try
+            {
+                await manager.UpdateStatusAsync(id, status);
+                return Ok(new { Message = "Car status updated successfully" });
             }
             catch (Exception ex)
             {

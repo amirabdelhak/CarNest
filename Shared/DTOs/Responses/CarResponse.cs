@@ -28,5 +28,7 @@ namespace Presentation.DTOs.Responses
         public decimal EngineCapacity { get; set; }
         public int Horsepower { get; set; }
         public DrivetrainType DrivetrainType { get; set; }
+        public CarStatus Status { get; set; }
+        public string? CarLicenseUrl { get; set; }
     }
 }

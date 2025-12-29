@@ -13,5 +13,6 @@ namespace Presentation.DTOs.Responses
         public string? PublisherName { get; set; }
         public string? PublisherPhone { get; set; }
         public string? PublisherEmail { get; set; }
+        public string? OwnerId { get; set; }
     }
 }
