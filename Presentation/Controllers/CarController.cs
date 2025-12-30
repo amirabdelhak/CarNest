@@ -63,7 +63,7 @@ namespace Presentation.Controllers
         /// </summary>
         [HttpPost]
         [Authorize(Roles = "Admin,Vendor")]
-        public async Task<IActionResult> Add([FromForm] CarRequest request)
+        public async Task<IActionResult> Add([FromForm] CarCreateRequest request)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userRole = User.FindFirstValue(ClaimTypes.Role);
@@ -97,7 +97,7 @@ namespace Presentation.Controllers
         public async Task<IActionResult> Update(
             string id,
             [FromForm] CarRequest request,
-            [FromForm] string? imagesToDeleteJson)
+            [FromForm] string? imagesToDeleteJson = null)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userRole = User.FindFirstValue(ClaimTypes.Role);
@@ -106,7 +106,7 @@ namespace Presentation.Controllers
             {
                 // Parse images to delete from JSON
                 List<string>? imagesToDelete = null;
-                if (!string.IsNullOrWhiteSpace(imagesToDeleteJson))  // Changed from IsNullOrEmpty
+                if (!string.IsNullOrWhiteSpace(imagesToDeleteJson) && imagesToDeleteJson != "string" && imagesToDeleteJson != "null")
                 {
                     try
                     {
@@ -114,7 +114,9 @@ namespace Presentation.Controllers
                     }
                     catch (System.Text.Json.JsonException)
                     {
-                        return BadRequest(new { Message = "Invalid JSON format for imagesToDeleteJson" });
+                        // If it's not a valid JSON array, we can either return BadRequest or just ignore it if it's a single string (not recommended)
+                        // But for better UX with Swagger, we'll return a clear message or handle it.
+                        return BadRequest(new { Message = "imagesToDeleteJson must be a valid JSON array of strings (e.g., [\"url1\", \"url2\"]) or empty." });
                     }
                 }
 
