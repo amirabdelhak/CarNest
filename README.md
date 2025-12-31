@@ -1,62 +1,55 @@
 # CarNest API
 
-CarNest is a comprehensive RESTful API for a car marketplace built with ASP.NET Core 8.0, designed using Clean Architecture principles and implementing complete Role-Based Access Control (RBAC).
+CarNest is a comprehensive RESTful API for a car marketplace built with ASP.NET Core 8.0. The solution implements a robust **Layered Architecture** to ensure separation of concerns, maintainability, and scalability, featuring complete Role-Based Access Control (RBAC).
 
 ## Overview
 
-CarNest provides a robust backend for a multi-role car marketplace application. It supports user registration and authentication, car listings with multiple images, favorites management, and structured catalog data (makes, models, body types, fuel types, and locations). The system is designed for scalability, maintainability, and clear separation of concerns.
+CarNest provides a backend for a multi-role car marketplace application. It supports user registration and authentication, detailed car listings with multiple images and specifications, favorites management, and structured catalog data.
 
 ## Features
 
 ### Core Functionality
 
-- Multi-image support for car listings (stored as JSON, with file management)
-- Full CRUD support for core entities (Cars, Favorites, Categories, etc.)
-- Role-Based Access Control (RBAC) with distinct permissions
-- JWT-based authentication and authorization
-- Clean Architecture with clear layering (DAL, BLL, Presentation)
-- File upload handling with validation (size, type, count, MIME)
-- Pagination and advanced filtering support
-- Ready-to-use Swagger documentation
+- **Layered Architecture**: Organized into DAL, BLL, Shared, and Presentation projects.
+- **Role-Based Access Control (RBAC)**: Distinct permissions for Admins, Vendors, and Customers.
+- **JWT Authentication**: Secure, token-based authentication with configurable expiry.
+- **Advanced Car Listings**: Support for multiple images, license verification, and detailed specs.
+- **File Management**: robust handling of image uploads (cars & licenses) with validation.
+- **Approval Workflow**: System for Admins to approve or reject car listings.
+- **Search & Filter**: Advanced pagination and filtering capabilities.
 
-### Car Features
+### Car Specifications
 
 - **Condition**: New or Used
-- **Gear Type**: Manual or Automatic
-- **Mileage tracking** for used cars
-- **Last inspection date** support
+- **Transmission**: Manual or Automatic
+- **Drivetrain**: FWD, RWD, AWD, or 4WD
+- **Engine**: Capacity (Liters) and Horsepower
+- **Appearance**: Exterior and Interior colors
+- **History**: Mileage tracking and inspection dates for used cars
+- **Verification**: Mandatory car license image upload
+- **Status**: Pending → Approved / Rejected workflow
 
-### User Roles and Permissions
+### User Roles
 
 #### Admin
-
-- Can view all cars
-- Can create cars with images
-- Can update any car
-- Can delete any car
-- Can register new admins
-- Can manage all system entities and reference data
+- Full access to all cars (Approved, Pending, Rejected).
+- Manage car approvals (Approve/Reject listings).
+- Create and manage system-wide data (Makes, Models, etc.).
+- Register new Admins.
 
 #### Vendor
-
-- Can view only their own cars
-- Can create cars with images
-- Can update only their own cars
-- Can delete only their own cars
-- Cannot modify other vendors' cars
+- Create and manage their own car listings.
+- View only their own cars.
+- Updates to cars reset status to "Pending" for re-approval.
 
 #### Customer
-
-- Can view all cars
-- Can view car details
-- Can add cars to favorites
-- Can view their favorites
-- Can remove cars from favorites
-- Cannot create, update, or delete cars
+- View approved car listings.
+- Manage a personal "Favorites" list.
+- View car details (excluding sensitive license data).
 
 ## Architecture
 
-The solution follows Clean Architecture and is organized into distinct layers:
+The solution is organized into four distinct projects:
 
 ```
 CarNest/
@@ -93,7 +86,6 @@ CarNest/
 
 - [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 - [SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads)
-- [Visual Studio 2022](https://visualstudio.microsoft.com/vs/) or [VS Code](https://code.visualstudio.com/)
 
 ### Installation
 
@@ -104,9 +96,8 @@ git clone https://github.com/amirabdelhak/CarNest.git
 cd CarNest
 ```
 
-2. **Update Connection String**
-
-Edit `Presentation/appsettings.json` to set your database connection string:
+2. **Configure Database**
+   Update `Presentation/appsettings.json` with your connection string:
 
 ```json
 {
@@ -118,100 +109,59 @@ Edit `Presentation/appsettings.json` to set your database connection string:
 
 > **Note**: Update the connection string key in `Program.cs` if you change the key name.
 
-3. **Apply Database Migrations**
+3. **Apply Migrations**
 
 ```bash
 dotnet ef database update --project DAL --startup-project Presentation
 ```
 
-4. **Build and Run**
+4. **Run the API**
 
 ```bash
-dotnet build
 dotnet run --project Presentation
 ```
 
 The API will be available at: `https://localhost:7XXX` (check console output)
 
-### Default Admin Account
-
-On first run, the system automatically seeds an admin user with credentials from `appsettings.json`:
-
-- **Email**: admin@carnest.com
-- **Password**: Admin@123
-
-### Test Data (Development Only)
-
-In development mode, the system seeds sample data including:
-- Body types (Sedan, SUV, Hatchback)
-- Fuel types (Gasoline, Diesel, Electric)
-- Locations (Cairo, Alexandria, Giza)
-- Makes (Toyota, Honda) with models
-- A test vendor account (`vendor@test.com` / `Vendor@123`)
-- Sample car listings
+### Default Admin
+The system seeds a default admin on the first run:
+- **Email**: `admin@carnest.com`
+- **Password**: `Admin@123`
 
 ## API Endpoints
 
 ### Authentication
-
-| Method | Endpoint                     | Description                      | Access    |
-|--------|------------------------------|----------------------------------|-----------|
-| POST   | `/api/account/register/admin`    | Register new admin           | Admin     |
-| POST   | `/api/account/register/vendor`   | Register new vendor          | Public    |
-| POST   | `/api/account/register/customer` | Register new customer        | Public    |
-| POST   | `/api/account/login`             | Login and get JWT token      | Public    |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/account/login` | Login to get JWT token |
+| POST | `/api/account/register/customer` | Register as Customer |
+| POST | `/api/account/register/vendor` | Register as Vendor |
+| POST | `/api/account/register/admin` | Register as Admin (Admin only) |
+| PUT | `/api/account/profile` | Update profile info |
+| POST | `/api/account/change-password` | Change password |
 
 ### Cars
-
-| Method | Endpoint        | Description                                    | Access              |
-|--------|-----------------|------------------------------------------------|---------------------|
-| GET    | `/api/car`      | Get all cars with pagination/filtering         | Authenticated       |
-| GET    | `/api/car/{id}` | Get car details                                | Authenticated       |
-| POST   | `/api/car`      | Create car with images                         | Admin, Vendor       |
-| PUT    | `/api/car/{id}` | Update car                                     | Admin, Vendor (own) |
-| DELETE | `/api/car/{id}` | Delete car                                     | Admin, Vendor (own) |
-
-#### Pagination & Filtering Parameters
-
-| Parameter    | Type     | Description                          |
-|--------------|----------|--------------------------------------|
-| PageNumber   | int      | Page number (default: 1)             |
-| PageSize     | int      | Items per page (default: 10)         |
-| MakeId       | int?     | Filter by make                       |
-| ModelId      | int?     | Filter by model                      |
-| BodyTypeId   | int?     | Filter by body type                  |
-| FuelId       | int?     | Filter by fuel type                  |
-| LocId        | int?     | Filter by location                   |
-| MinPrice     | decimal? | Minimum price                        |
-| MaxPrice     | decimal? | Maximum price                        |
-| Year         | int?     | Filter by year                       |
-| Condition    | enum?    | New (0) or Used (1)                  |
-| MinMileage   | int?     | Minimum mileage                      |
-| MaxMileage   | int?     | Maximum mileage                      |
-| GearType     | enum?    | Manual (0) or Automatic (1)          |
-| SearchTerm   | string?  | Text search                          |
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| GET | `/api/car` | Get approved cars (Paginated) | Auth |
+| GET | `/api/car/{id}` | Get car details | Auth |
+| POST | `/api/car` | Create new listing | Admin, Vendor |
+| PUT | `/api/car/{id}` | Update listing | Admin, Vendor (Owner) |
+| DELETE | `/api/car/{id}` | Delete listing | Admin, Vendor (Owner) |
+| GET | `/api/car/pending` | View pending cars | Admin |
+| GET | `/api/car/rejected` | View rejected cars | Admin |
+| PUT | `/api/car/{id}/status` | Update status (Approve/Reject) | Admin |
 
 ### Favorites
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| GET | `/api/favorite` | Get my favorites | Customer |
+| POST | `/api/favorite` | Add to favorites | Customer |
+| DELETE | `/api/favorite/{carId}` | Remove from favorites | Customer |
 
-| Method | Endpoint                | Description                      | Access   |
-|--------|-------------------------|----------------------------------|----------|
-| GET    | `/api/favorite`         | Get customer's favorites         | Customer |
-| POST   | `/api/favorite`         | Add car to favorites             | Customer |
-| DELETE | `/api/favorite/{carId}` | Remove from favorites            | Customer |
+## Request Examples
 
-### Reference Data
-
-| Method | Endpoint        | Description          |
-|--------|-----------------|----------------------|
-| GET    | `/api/make`     | Get all car makes    |
-| GET    | `/api/model`    | Get all car models   |
-| GET    | `/api/bodytype` | Get all body types   |
-| GET    | `/api/fueltype` | Get all fuel types   |
-| GET    | `/api/location` | Get all locations    |
-
-## Request/Response Examples
-
-### Create Car with Images (Multipart Form Data)
+### Create Car (Multipart/Form-Data)
 
 ```javascript
 const formData = new FormData();
@@ -333,105 +283,17 @@ Token expiry is configurable (default: 1440 minutes / 24 hours).
 
 ## Database Schema
 
-### Main Entities
+### Key Entities
+- **Cars**: Main listing entity.
+- **Users**: Extends IdentityUser (Admin, Vendor, Customer).
+- **Reference Data**: Makes, Models, BodyTypes, FuelTypes, Locations.
+- **Favorites**: Join table for Customer favorites.
 
-| Entity         | Description                              |
-|----------------|------------------------------------------|
-| Cars           | Vehicle listings with images (JSON)      |
-| Makes          | Car manufacturers                        |
-| Models         | Car models (linked to Makes)             |
-| BodyTypes      | Vehicle body types                       |
-| FuelTypes      | Fuel types                               |
-| LocationCities | Available locations                      |
-| Favorites      | Customer favorites                       |
-| Admin          | Admin user accounts (extends IdentityUser) |
-| Vendor         | Vendor user accounts (extends IdentityUser) |
-| Customer       | Customer user accounts (extends IdentityUser) |
-
-### Car Entity Fields
-
-| Field              | Type          | Constraints                      |
-|--------------------|---------------|----------------------------------|
-| CarId              | string (36)   | Primary Key (GUID)               |
-| Year               | int           | Required, 1900-2026              |
-| Price              | decimal(18,2) | Required, > 0                    |
-| Description        | string        | Max 2048 characters              |
-| ImageUrls          | string (JSON) | Array of image paths             |
-| Condition          | enum          | New (0), Used (1)                |
-| Mileage            | int?          | >= 0, for used cars              |
-| LastInspectionDate | DateTime?     | Optional inspection date         |
-| GearType           | enum          | Manual (0), Automatic (1)        |
-| ModelId            | int           | Required FK                      |
-| BodyTypeId         | int           | Required FK                      |
-| FuelId             | int           | Required FK                      |
-| LocId              | int           | Required FK                      |
-| AdminId            | string?       | FK (if created by admin)         |
-| VendorId           | string?       | FK (if created by vendor)        |
-| CreatedDate        | DateTime      | Auto-set to UTC now              |
-
-## Configuration
-
-### appsettings.json Structure
-
-```json
-{
-  "ConnectionStrings": {
-    "DBConnection": "Server=.;Database=CarNest;Trusted_Connection=True;TrustServerCertificate=True"
-  },
-  "JwtSettings": {
-    "SecretKey": "YourSecretKey_MinimumLength32Characters!",
-    "Issuer": "CarNestAPI",
-    "Audience": "CarNestClient",
-    "ExpiryMinutes": 1440
-  },
-  "Admin": {
-    "Username": "admin",
-    "Email": "admin@carnest.com",
-    "Password": "Admin@123",
-    "FirstName": "System",
-    "LastName": "Administrator",
-    "Address": "Cairo, Egypt",
-    "NationalId": "00000000000000"
-  }
-}
-```
-
-## Security Features
-
-- JWT token authentication with configurable expiry
-- Role-based authorization (Admin, Vendor, Customer)
-- Password hashing with ASP.NET Core Identity
-- CORS configuration (AllowAll policy - configure for production)
-- File upload validation (size, type, MIME)
-- Ownership validation for Vendor operations
-
-## Dependencies
-
-- ASP.NET Core 8.0
-- Entity Framework Core 8.0
-- Microsoft.AspNetCore.Identity.EntityFrameworkCore
-- Microsoft.AspNetCore.Authentication.JwtBearer
-- SQL Server
-- Swashbuckle.AspNetCore (Swagger)
-
-## Project Structure
-
-| Project      | Description                                      |
-|--------------|--------------------------------------------------|
-| Presentation | API controllers, configuration, static files     |
-| BLL          | Business logic managers                          |
-| DAL          | Database context, entities, repositories         |
-| Shared       | DTOs, mappings shared across layers              |
-
-## Contributing
-
-We welcome contributions! To contribute:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+### Car Constraints
+- **Price**: Must be > 10,000.
+- **Year**: Between 1900 and 2026.
+- **Engine**: Capacity 0.1-99.99L, HP 1-2000.
+- **Images**: Max 5MB per file, allowed types: jpg, png, gif, webp.
 
 ## License
 
