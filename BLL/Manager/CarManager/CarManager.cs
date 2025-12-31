@@ -117,10 +117,16 @@ namespace BLL.Manager.CarManager
             // Validate condition-specific rules
             ValidateConditionRules(request);
 
-            // Ensure LicenseImage is provided (especially for vendors)
+            // Ensure at least one car image is provided
+            if (images == null || images.Count == 0)
+            {
+                throw new ArgumentException("At least one car image is required");
+            }
+
+            // Ensure LicenseImage is provided
             if (licenseImage == null)
             {
-                throw new ArgumentException("Car license image (paper image) is required");
+                throw new ArgumentException("Car license image is required");
             }
 
             // Validate ModelId exists
@@ -170,10 +176,11 @@ namespace BLL.Manager.CarManager
             // Save license image if provided
             if (licenseImage != null)
             {
-                if (ValidateImageFile(licenseImage))
+                if (!ValidateImageFile(licenseImage, out string errorMessage))
                 {
-                    entity.CarLicenseUrl = SaveImage(licenseImage, "licenses");
+                    throw new ArgumentException($"License image validation failed: {errorMessage}");
                 }
+                entity.CarLicenseUrl = SaveImage(licenseImage, "licenses");
             }
 
             UnitOfWork.CarRepo.Add(entity);
@@ -286,10 +293,11 @@ namespace BLL.Manager.CarManager
                     DeleteImage(existingCar.CarLicenseUrl);
                 }
 
-                if (ValidateImageFile(licenseImage))
+                if (!ValidateImageFile(licenseImage, out string errorMessage))
                 {
-                    existingCar.CarLicenseUrl = SaveImage(licenseImage, "licenses");
+                    throw new ArgumentException($"License image validation failed: {errorMessage}");
                 }
+                existingCar.CarLicenseUrl = SaveImage(licenseImage, "licenses");
             }
 
             // If vendor updates, reset status to Pending
@@ -636,9 +644,9 @@ namespace BLL.Manager.CarManager
             foreach (var image in images)
             {
                 // Validate image
-                if (!ValidateImageFile(image))
+                if (!ValidateImageFile(image, out string errorMessage))
                 {
-                    continue; // Skip invalid images
+                    throw new ArgumentException($"Image '{image.FileName}' validation failed: {errorMessage}");
                 }
 
                 // Generate unique filename
@@ -679,11 +687,14 @@ namespace BLL.Manager.CarManager
             }
         }
 
-        private bool ValidateImageFile(IFormFile file)
+        private bool ValidateImageFile(IFormFile file, out string errorMessage)
         {
+            errorMessage = string.Empty;
+
             // Check file size (max 5MB)
             if (file.Length > 5 * 1024 * 1024)
             {
+                errorMessage = "File size exceeds 5MB limit.";
                 return false;
             }
 
@@ -692,6 +703,7 @@ namespace BLL.Manager.CarManager
             var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
             if (!allowedExtensions.Contains(fileExtension))
             {
+                errorMessage = "Invalid file extension. Allowed: .jpg, .jpeg, .png, .gif, .webp";
                 return false;
             }
 
@@ -699,6 +711,7 @@ namespace BLL.Manager.CarManager
             var allowedMimeTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
             if (!allowedMimeTypes.Contains(file.ContentType.ToLowerInvariant()))
             {
+                errorMessage = "Invalid file type.";
                 return false;
             }
 
